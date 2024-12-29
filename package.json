@@ -2,10 +2,10 @@
   "name": "twitter-clone",
   "version": "1.0.0",
   "description": "",
-  "main": "./backend/index.js",
+  "main": "./backend/src/index.ts",
   "scripts": {
-    "dev": "nodemon ./backend/index.js",
-    "start": "node ./backend/index.js"
+    "watch": "concurrently \"tsc --watch\" \"nodemon --watch ./backend/dist --exec 'node' ./backend/dist/index.js\"",
+    "start": "node ./backend/dist/index.ts"
   },
   "repository": {
     "type": "git",
@@ -14,7 +14,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
+  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/BALAJI-PRO-001/twitter-clone/issues"
   },
@@ -26,11 +26,20 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "express-validator": "^7.2.1",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.9.2",
-    "multer": "^1.4.5-lts.1"
+    "mongoose": "^8.9.2"
   },
   "devDependencies": {
-    "nodemon": "^3.1.9"
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.8",
+    "@types/dotenv": "^6.1.1",
+    "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^22.10.2",
+    "concurrently": "^9.1.1",
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
   }
 }

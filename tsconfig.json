@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "incremental": true,
+    "tsBuildInfoFile": "./.tsbuildinfo",
+    "target": "es2016",
+    "module": "CommonJS",
+    "rootDir": "./backend/src",
+    "outDir": "./backend/dist",
+    "removeComments": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+  },
+  "include": ["./backend/**/*.ts"],
+  "exclude": ["node_modules"]
+}
