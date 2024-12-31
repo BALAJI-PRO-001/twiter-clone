@@ -3,12 +3,14 @@ export interface HTTPError extends Error {
   message: string;
 }
 
-
 export interface FormattedUserDataValidationError {
-  isValid: boolean;
   field: string;
   validationLocation: string;
   providedValue: string;
   errorMessages: string[];
 }
 
+export interface ValidationResult {
+  isValid: boolean;
+  value: any;
+}
