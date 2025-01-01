@@ -1,4 +1,4 @@
-import { Request } from "express";
+import { Request, Response, NextFunction } from "express";
 import User from '../../models/user.model.js';
 import { FormattedUserDataValidationError, ValidationResult } from '../../lib/types';
 import { body, validationResult, Result, ValidationError } from 'express-validator';
@@ -28,17 +28,17 @@ async function checkRequiredFiled(req: Request, fieldName: string): Promise<void
 
 
 
-export async function checkNewUserRequiredFields(req: Request): Promise<{ isValid: boolean, validationLocation?: string, errorMessages?: string[] }> {
+async function checkNewUserRequiredFields(req: Request): Promise<{ isValid: boolean, validationLocation?: string, errorMessages?: string[] }> {
   await checkRequiredFiled(req, 'username');
   await checkRequiredFiled(req, 'fullName');
   await checkRequiredFiled(req, 'email');
   await checkRequiredFiled(req, 'password');
   await checkRequiredFiled(req, 'followers')
   await checkRequiredFiled(req, 'following');
-  await checkRequiredFiled(req, 'profileImg');
-  await checkRequiredFiled(req, 'coverImg');
+  await checkRequiredFiled(req, 'profileImgURL');
+  await checkRequiredFiled(req, 'coverImgURL');
   await checkRequiredFiled(req, 'bio');
-  await checkRequiredFiled(req, 'links');
+  await checkRequiredFiled(req, 'links'); 
   
   const results = validationResult(req).formatWith((err) => err.msg as string);
   if (!results.isEmpty()) {
@@ -50,7 +50,7 @@ export async function checkNewUserRequiredFields(req: Request): Promise<{ isVali
 
 
 
-export async function validateUsername(req: Request): Promise<FormattedUserDataValidationError | ValidationResult> {
+async function validateUsername(req: Request): Promise<FormattedUserDataValidationError | ValidationResult> {
   await body('username')
     .trim().escape()
     .matches(/^[a-zA-Z0-9_]+$/).withMessage('Username can only contain letters, numbers, and underscores.')
@@ -78,7 +78,7 @@ export async function validateUsername(req: Request): Promise<FormattedUserDataV
 
 
 
-export async function validateUserFullName(req: Request): Promise<FormattedUserDataValidationError | ValidationResult> {
+async function validateUserFullName(req: Request): Promise<FormattedUserDataValidationError | ValidationResult> {
   await body('fullName')
     .trim().escape()
     .isString().withMessage('User fullname must be string.')
@@ -95,7 +95,7 @@ export async function validateUserFullName(req: Request): Promise<FormattedUserD
 
 
 
-export async function validateEmail(req: Request): Promise<FormattedUserDataValidationError | ValidationResult> {
+async function validateEmail(req: Request): Promise<FormattedUserDataValidationError | ValidationResult> {
   await body('email')
     .trim().escape()
     .isEmail({ host_whitelist: ['gmail.com'] }).withMessage('Please provide valid email.')
@@ -121,7 +121,7 @@ export async function validateEmail(req: Request): Promise<FormattedUserDataVali
 
 
 
-export async function validatePassword(req: Request): Promise<FormattedUserDataValidationError | ValidationResult> {
+async function validatePassword(req: Request): Promise<FormattedUserDataValidationError | ValidationResult> {
   await body('password')
     .trim().escape()
     .isLength({ min: 8 }).withMessage('Password must be at least 8 characters or long.')
@@ -144,7 +144,7 @@ export async function validatePassword(req: Request): Promise<FormattedUserDataV
 
 
 
-export async function validateFollowers(req: Request): Promise<FormattedUserDataValidationError | ValidationResult> {
+async function validateFollowers(req: Request): Promise<FormattedUserDataValidationError | ValidationResult> {
   await body('followers')
     .isArray({ max: 0 }).withMessage('Followers field must be empty array.')
     .run(req);
@@ -158,7 +158,7 @@ export async function validateFollowers(req: Request): Promise<FormattedUserData
 }
 
 
-export async function validateFollowing(req: Request): Promise<FormattedUserDataValidationError | ValidationResult> {
+async function validateFollowing(req: Request): Promise<FormattedUserDataValidationError | ValidationResult> {
   await body('following')
     .isArray({ max: 0 }).withMessage('Following field must be empty array.')
     .run(req);
@@ -173,7 +173,7 @@ export async function validateFollowing(req: Request): Promise<FormattedUserData
 
 
 
-export async function validateProfileImgURL(req: Request) {
+async function validateProfileImgURL(req: Request): Promise<FormattedUserDataValidationError | ValidationResult> {
   await body('profileImgURL')
     .trim().escape()
     .isURL()
@@ -184,11 +184,13 @@ export async function validateProfileImgURL(req: Request) {
   if (!result.isEmpty()) {
     return extractFormattedValidationError(result);
   }
+
+  return { isValid: true, value: req.body.profileImgURL };
 }
 
 
 
-export async function validateCoverImgURL(req: Request) {
+async function validateCoverImgURL(req: Request): Promise<FormattedUserDataValidationError | ValidationResult> {
   await body('coverImgURL')
     .trim().escape()
     .isURL()
@@ -199,4 +201,117 @@ export async function validateCoverImgURL(req: Request) {
   if (!result.isEmpty()) {
     return extractFormattedValidationError(result);
   }
+
+  return { isValid: true, value: req.body.coverImgURL };
+}
+
+
+
+async function validateBio(req: Request): Promise<FormattedUserDataValidationError | ValidationResult> {
+  await body('bio')
+    .isString().withMessage('Bio must be string.')
+    .trim()
+    .escape()
+    .run(req);
+
+  const result = validationResult(req);
+  if (!result.isEmpty()) {
+    return extractFormattedValidationError(result);
+  }
+
+  return { isValid: true, value: req.body.bio };
+}
+
+
+
+async function validateLinks(req: Request): Promise<FormattedUserDataValidationError | ValidationResult> {
+  await body('links')
+    .isURL().withMessage('Invalid links.')
+    .trim()
+    .escape()
+    .run(req);
+
+  const result = validationResult(req);
+  if (!result.isEmpty()) {
+    return extractFormattedValidationError(result);
+  }
+
+  return { isValid: true, value: req.body.links };
+}
+
+
+
+function validationResponseHandler(res: Response, statusCode: number,  validationResult: any): void {
+   res.status(statusCode).json(validationResult);
+}
+
+
+
+export async function validateNewUserData(req: Request, res: Response, next: NextFunction): Promise<void> {
+  const requiredFieldsValidationResult = await checkNewUserRequiredFields(req);
+  if (!requiredFieldsValidationResult.isValid) {
+    return validationResponseHandler(res, 400, requiredFieldsValidationResult);
+  }
+
+  const usernameValidationResult: any = await validateUsername(req);
+  if (!usernameValidationResult.isValid) {
+    const statusCode = usernameValidationResult.errorMessages[0].includes('Duplicate') ? 409 : 400;
+    return validationResponseHandler(res, statusCode, usernameValidationResult);
+  }
+
+  const fullNameValidationResult: any = await validateUserFullName(req);
+  if (!fullNameValidationResult.isValid) {
+    return validationResponseHandler(res, 400, fullNameValidationResult);
+  }
+
+
+  const emailValidationResult: any = await validateEmail(req);
+  if (!emailValidationResult.isValid) {
+    const statusCode = emailValidationResult.errorMessages[0].includes('Duplicate') ? 409 : 400;
+    return validationResponseHandler(res, statusCode, emailValidationResult);
+  }
+
+
+  const passwordValidationResult: any = await validatePassword(req);
+  if (!passwordValidationResult.isValid) {
+    return validationResponseHandler(res, 400, passwordValidationResult);
+  }
+
+  
+  const followersValidationResult: any = await validateFollowers(req);
+  if (!followersValidationResult.isValid) {
+    return validationResponseHandler(res, 400, followersValidationResult);
+  }
+
+
+  const followingValidationResult: any = await validateFollowing(req);
+  if (!followingValidationResult.isValid) {
+    return validationResponseHandler(res, 400, followingValidationResult);
+  }
+
+
+  const profileImgURLValidationResult: any = await validateProfileImgURL(req);
+  if (!profileImgURLValidationResult.isValid) {
+    return validationResponseHandler(res, 400, profileImgURLValidationResult);
+  }
+
+
+  const coverImgURLValidationResult: any = await validateCoverImgURL(req);
+  if (!coverImgURLValidationResult.isValid) {
+    return validationResponseHandler(res, 400, coverImgURLValidationResult);
+  }
+
+
+  const bioValidationResult: any = await validateBio(req);
+  if (!bioValidationResult.isValid) {
+    return validationResponseHandler(res, 400, bioValidationResult);
+  }
+
+  
+  const linksValidationResult: any = await validateLinks(req);
+  if (!linksValidationResult.isValid) {
+    return validationResponseHandler(res, 400, linksValidationResult);
+  }
+  
+  next();
 }
