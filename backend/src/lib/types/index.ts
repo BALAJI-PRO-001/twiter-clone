@@ -16,7 +16,7 @@ export interface ValidationResult {
 }
 
 
-export interface RequiredFiledsValidationResult {
+export interface RequiredFieldsValidationResult {
   isValid?: boolean;
   validationLocation?: string;
   errorMessages?: string[];

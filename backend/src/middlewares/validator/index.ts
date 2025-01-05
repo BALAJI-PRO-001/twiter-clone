@@ -1,8 +1,10 @@
 import {
-  validateNewUserData
+  validateNewUserData,
+  validateUserCredentials
 } from './userDataValidator';
 
 
 export {
-  validateNewUserData
+  validateNewUserData,
+  validateUserCredentials
 };
