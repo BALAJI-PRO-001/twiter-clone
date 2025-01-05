@@ -5,8 +5,10 @@ import errorResponseHandler from './middlewares/errorResponseHandler';
 
 const app = express();
 
+/* Middlewares configs */
 app.use(express.json());
 app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
 
 /* Router config */
 app.use('/api/v1/auth', authRouter);
