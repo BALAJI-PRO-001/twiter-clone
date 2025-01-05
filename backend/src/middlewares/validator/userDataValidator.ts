@@ -4,7 +4,6 @@ import {
   body,
   validationResult,
   Result,
-  ValidationError
 } from 'express-validator';
 import {
   FormattedUserDataValidationError,
@@ -78,7 +77,7 @@ async function checkNewUserRequiredFields(
 async function checkUserCredentials(
   req: Request
 ): Promise<RequiredFieldsValidationResult> {
-  await checkRequiredFiled(req, 'email');
+  await checkRequiredFiled(req, 'username');
   await checkRequiredFiled(req, 'password');
 
   const results: Result<string> = validationResult(req).formatWith((err) => err.msg as string);
@@ -159,12 +158,13 @@ async function validateEmail(
 
   if (dbCheck) {
     const isEmailAlreadyInUse = await User.findOne({ email: req.body.email });
+
     if (isEmailAlreadyInUse) {
       return {
         isValid: false,
         validationLocation: 'body',
         providedValue: req.body.email,
-        errorMessages: ['Duplicate: Email is already used by another account.'],
+        errorMessages: [ 'Duplicate: Email is already used in another account.' ]
       };
     }
   }
@@ -357,13 +357,15 @@ export async function validateUserCredentials(
     });
   }
 
-  const emailValidationResult: any = await validateEmail(req);
-  const passwordValidationResult: any = await validatePassword(req);
-
-  if (!emailValidationResult.isValid || !passwordValidationResult.isValid) {
-    return validationResultHandler(res, 400, [{
-      email: emailValidationResult,
-      password: passwordValidationResult,
-    }]);
+  const usernameValidationResult: any = await validateUsername(req);
+  if (!usernameValidationResult.isValid) {
+    return validationResultHandler(res, 400, { usernameValidationResult });
   }
+
+  const passwordValidationResult: any = await validatePassword(req);
+  if (!passwordValidationResult.isValid) {
+    return validationResultHandler(res, 400, { password: passwordValidationResult });
+  }
+
+  next();
 }
