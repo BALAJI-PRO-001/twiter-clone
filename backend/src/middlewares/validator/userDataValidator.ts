@@ -95,7 +95,8 @@ async function checkUserCredentials(
 
 
 async function validateUsername(
-  req: Request, dbCheck: boolean = false
+  req: Request,
+  dbCheck: boolean = false
 ): Promise<FormattedUserDataValidationError | ValidationResult> {
   await body('username')
     .trim().escape()
@@ -144,7 +145,8 @@ async function validateUserFullName(
 
 
 async function validateEmail(
-  req: Request, dbCheck: boolean = false
+  req: Request,
+  dbCheck: boolean = false
 ): Promise<FormattedUserDataValidationError | ValidationResult> {
   await body('email')
     .trim().escape()
@@ -309,7 +311,9 @@ async function validateLinks(
 
 
 export async function validateNewUserData(
-  req: Request, res: Response, next: NextFunction
+  req: Request,
+  res: Response,
+  next: NextFunction
 ): Promise<void> {
   const requiredFieldsValidationResult = await checkNewUserRequiredFields(req);
   if (!requiredFieldsValidationResult.isValid) {
