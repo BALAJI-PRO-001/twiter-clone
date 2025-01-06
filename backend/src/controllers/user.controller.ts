@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import User from "../models/user.model";
 import { createHTTPError, sanitizeUserAndFormat } from "../lib/utils/common";
 import Notification from "../models/notification.model";
+import mongoose from 'mongoose';
 
 
 export async function getUser(
@@ -81,3 +82,40 @@ export async function toggleFollower(
   }
 }
 
+
+
+export async function getSuggestedUsers(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const currentUserId = new mongoose.Types.ObjectId(req.params.id);
+    const usersFollowedByMe = await User.findById(currentUserId).select('following');
+    if (!usersFollowedByMe) {
+      return next(createHTTPError(404, 'User not found.'));
+    }
+
+    const users = await User.aggregate([
+      { $match: { _id: { $ne: currentUserId } } },
+      { $sample: { size: 10 } },
+      { $project: { password: 0 } }
+    ]); 
+
+    const filteredUsers = users.filter((user) => {
+      return !usersFollowedByMe.following.includes(user._id.toString());
+    });
+
+    const suggestedUsers = filteredUsers.slice(0, 4);
+    
+    res.status(200).json({
+      success: true,
+      statusCode: 200,
+      data: {
+        users: suggestedUsers
+      }
+    });
+  } catch(err) {
+    next(err);
+  }
+}
