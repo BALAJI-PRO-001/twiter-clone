@@ -21,3 +21,12 @@ export interface RequiredFieldsValidationResult {
   validationLocation?: string;
   errorMessages?: string[];
 }
+
+
+declare global {
+  namespace Express {
+    interface Request {
+      verifiedUserId?: string
+    }
+  }
+}
