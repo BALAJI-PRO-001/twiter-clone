@@ -1,5 +1,5 @@
 .env
-time.txt
+devInfo.txt
 backend/dist/
 
 # Logs

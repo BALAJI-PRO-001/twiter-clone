@@ -1,12 +1,23 @@
 import express from 'express';
-import { signup, login, logout } from '../controllers/auth.controller';
-import { validateNewUserData } from '../middlewares/validator';
+import { 
+  signup, 
+  login, 
+  logout, 
+  getAuthenticatedUser 
+} from '../controllers/auth.controller';
+import { 
+  validateNewUserData, 
+  validateUserCredentials
+} from '../middlewares/validator';
+import { verifyUserAccessToken } from '../middlewares/verifyUserAccessToken';
+
 
 const router = express.Router();
 
 router.post('/signup', validateNewUserData, signup)
-      .post('/login', login);
+      .post('/login', validateUserCredentials, login);
 
-router.get('/logout', logout);
+router.get('/logout', logout)
+      .get('/user/authenticated',  verifyUserAccessToken, getAuthenticatedUser);
 
 export default router;
