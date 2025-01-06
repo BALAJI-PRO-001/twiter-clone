@@ -54,8 +54,8 @@ export async function login(
   next: NextFunction
 ): Promise<void> {
   try { 
-    const { email, password } = req.body;
-    const user = await User.findOne({ email: email });
+    const { username, password } = req.body;
+    const user = await User.findOne({ username: username });
 
     if (!user) {
       return next(createHTTPError(404, 'Not Found: Invalid username.'));
@@ -98,6 +98,31 @@ export async function logout(
           statusCode: 200,
           message: "Logged out successfully."
        });
+  } catch(err) {
+    next(err);
+  }
+}
+
+
+
+export async function getAuthenticatedUser(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {  
+  try {
+    const user = await User.findById(req.verifiedUserId as string);
+    if (!user) {
+      return next(createHTTPError(404, 'User not found.'));
+    }
+  
+    res.status(200).json({
+      success: true,
+      statusCode: 200,
+      data: {
+        user: sanitizeUserAndFormat(user)
+      }
+    });
   } catch(err) {
     next(err);
   }
