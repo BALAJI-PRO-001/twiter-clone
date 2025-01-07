@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import {
-  validateNewUserData,
-  validateUserCredentials
+  validateNewUserFields,
+  validateUserCredentials,
+  validateUserUpdateFields,
 } from './userDataValidator';
 import { body, param, validationResult } from 'express-validator';
 import { createHTTPError } from '../../lib/utils/common';
@@ -38,7 +39,8 @@ async function validateId(
 
 
 export {
-  validateNewUserData,
+  validateId,
+  validateNewUserFields,
   validateUserCredentials,
-  validateId
+  validateUserUpdateFields
 };
