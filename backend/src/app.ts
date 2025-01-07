@@ -2,9 +2,14 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import authRouter from './routes/auth.route';
 import userRouter from './routes/user.route';
+import { v2 as cloudinary } from 'cloudinary';
+import cloudinaryConfig from './config/cloudinary';
 import errorResponseHandler from './middlewares/errorResponseHandler';
 
 const app = express();
+
+/* Cloudinary config */
+cloudinary.config(cloudinaryConfig);
 
 /* Middlewares configs */
 app.use(express.json());
