@@ -3,6 +3,8 @@ import User from "../models/user.model";
 import { createHTTPError, sanitizeUserAndFormat } from "../lib/utils/common";
 import Notification from "../models/notification.model";
 import mongoose from 'mongoose';
+import bcryptjs from 'bcryptjs';
+import { v2 as cloudinary } from "cloudinary";
 
 
 export async function getUser(
@@ -115,6 +117,75 @@ export async function getSuggestedUsers(
         users: suggestedUsers
       }
     });
+  } catch(err) {
+    next(err);
+  }
+}
+
+
+
+export async function updateUser(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return next(createHTTPError(404, 'User not found.'));
+    }
+
+    const { username, fullName, email, currentPassword, newPassword, bio, link } = req.body;
+    let { profileImgURL, coverImgURL } = req.body;
+
+    if (currentPassword && newPassword) {
+      const isMatch = await bcryptjs.compare(currentPassword, user.password);
+      if (!isMatch) {
+        return next(createHTTPError(401, 'Unauthorized: Invalid password.'));
+      }
+
+      const salt = await bcryptjs.genSalt(10);
+      user.password = await bcryptjs.hash(newPassword, salt);
+    }
+
+    if (profileImgURL) {
+      if (user.profileImgURL) {
+        const imgId = user.profileImgURL.split('/').pop()?.split('.')[0] as string;
+        await cloudinary.uploader.destroy(imgId);
+      }
+
+      const uploadedResponse = await cloudinary.uploader.upload(profileImgURL);
+      profileImgURL = uploadedResponse.secure_url;
+    } 
+
+    if (coverImgURL) {
+       if (user.coverImgURL) {
+        const imgId = user.coverImgURL.split('/').pop()?.split('.')[0] as string;
+        await cloudinary.uploader.destroy(imgId);
+      }     
+
+      const uploadedResponse = await cloudinary.uploader.upload(coverImgURL);
+      coverImgURL = uploadedResponse.secure_url;
+    }
+
+    user.username = username || user.username;
+    user.fullName = fullName || user.fullName;
+    user.email = email || user.email;
+    user.profileImgURL = profileImgURL || user.profileImgURL;
+    user.coverImgURL = coverImgURL || user.coverImgURL;
+    user.bio = bio || user.bio;
+    user.link = link || user.link;
+
+    const updatedUser = await user.save();
+    res.status(200).json({
+      success: true,
+      statusCode: 200,
+      data: {
+        user: sanitizeUserAndFormat(updatedUser)
+      }
+    });  
   } catch(err) {
     next(err);
   }
