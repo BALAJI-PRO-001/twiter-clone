@@ -6,15 +6,15 @@ import {
   getAuthenticatedUser 
 } from '../controllers/auth.controller';
 import { 
-  validateNewUserData, 
+  validateNewUserFields, 
   validateUserCredentials
 } from '../middlewares/validator';
-import { verifyUserAccessToken } from '../middlewares/verifyUserAccessToken';
+import verifyUserAccessToken  from '../middlewares/verifyUserAccessToken';
 
 
 const router = express.Router();
 
-router.post('/signup', validateNewUserData, signup)
+router.post('/signup', validateNewUserFields, signup)
       .post('/login', validateUserCredentials, login);
 
 router.get('/logout', logout)

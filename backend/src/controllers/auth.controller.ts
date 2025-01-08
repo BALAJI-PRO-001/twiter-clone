@@ -3,6 +3,12 @@ import User from '../models/user.model';
 import { createHTTPError, sanitizeUserAndFormat } from '../lib/utils/common';
 import { Request, Response, NextFunction } from 'express';
 import { generateAccessTokenAndSetCookie } from '../lib/utils/generateAccessTokenAndSetCookie';
+import { StatusCodes as STATUS_CODES } from 'http-status-codes';
+import { 
+  BAD_REQUEST_ERROR_MESSAGES, 
+  NOT_FOUND_ERROR_MESSAGES,
+  UNAUTHORIZED_ACCESS_ERROR_MESSAGES
+} from '../constants/httpErrorMessages';
 
 
 
@@ -31,16 +37,20 @@ export async function signup(
       });
       await newUser.save();
 
-      res.status(201).json({
+      res.status(STATUS_CODES.CREATED).json({
         success: true,
-        statusCode: 201,
+        statusCode: STATUS_CODES.CREATED,
         data: {
           user: sanitizeUserAndFormat(newUser)
         }
       });
       return;
     } 
-    return next(createHTTPError(400, 'Invalid user data.'));
+
+    return next(createHTTPError(
+      STATUS_CODES.BAD_REQUEST, 
+      BAD_REQUEST_ERROR_MESSAGES.INVALID_USER_DATA
+    ));
   } catch(err) {
     next(err);
   }
@@ -58,12 +68,12 @@ export async function login(
     const user = await User.findOne({ username: username });
 
     if (!user) {
-      return next(createHTTPError(404, 'Not Found: Invalid username.'));
+      return next(createHTTPError(STATUS_CODES.NOT_FOUND, NOT_FOUND_ERROR_MESSAGES.USERNAME));
     }
 
     const isValidPassword = await bcryptjs.compare(password, user.password);
     if (!isValidPassword) {
-      return next(createHTTPError(401, 'Unauthorized: Invalid password.'));
+      return next(createHTTPError(STATUS_CODES.UNAUTHORIZED, UNAUTHORIZED_ACCESS_ERROR_MESSAGES.PASSWORD));
     }
 
     generateAccessTokenAndSetCookie(res, 'user_access_token', { id: user.id }, {
@@ -72,9 +82,9 @@ export async function login(
       secure: process.env.NODE_ENV !== 'development'
     });
 
-    res.status(200).json({
+    res.status(STATUS_CODES.OK).json({
       success: true,
-      statusCode: 200,
+      statusCode: STATUS_CODES.OK,
       data: {
         user: sanitizeUserAndFormat(user)
       }
@@ -85,17 +95,18 @@ export async function login(
 }
 
 
+
 export async function logout(
   req: Request, 
   res: Response, 
   next: NextFunction
 ): Promise<void> {
   try {
-    res.status(200)
+    res.status(STATUS_CODES.OK)
        .clearCookie('user_access_token')
        .json({
           success: true,
-          statusCode: 200,
+          statusCode: STATUS_CODES.OK,
           message: "Logged out successfully."
        });
   } catch(err) {
@@ -113,7 +124,7 @@ export async function getAuthenticatedUser(
   try {
     const user = await User.findById(req.verifiedUserId as string);
     if (!user) {
-      return next(createHTTPError(404, 'User not found.'));
+      return next(createHTTPError(STATUS_CODES.NOT_FOUND, NOT_FOUND_ERROR_MESSAGES.USER));
     }
   
     res.status(200).json({

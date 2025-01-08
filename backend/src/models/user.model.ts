@@ -47,7 +47,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    links: {
+    link: {
       type: String,
       default: "",
     },

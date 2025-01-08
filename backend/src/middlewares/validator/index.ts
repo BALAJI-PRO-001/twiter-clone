@@ -1,13 +1,18 @@
 import { Request, Response, NextFunction } from 'express';
 import {
-  validateNewUserData,
-  validateUserCredentials
-} from './userDataValidator';
+  validateNewUserFields,
+  validateUserCredentials,
+  validateUserUpdateFields,
+} from './user';
 import { body, param, validationResult } from 'express-validator';
 import { createHTTPError } from '../../lib/utils/common';
+import { StatusCodes as STATUS_CODES } from 'http-status-codes';
+import { BAD_REQUEST_ERROR_MESSAGES } from '../../constants/httpErrorMessages';
+
 
 
 async function validateId(
+  fields: string | string[],
   req: Request, 
   res: Response, 
   next: NextFunction
@@ -19,17 +24,23 @@ async function validateId(
 
   let result = validationResult(req);
   if (!result.isEmpty()) {
-    return next(createHTTPError(400, 'Invalid mongodb id in url param.'));
+    return next(createHTTPError(
+      STATUS_CODES.BAD_REQUEST,
+      BAD_REQUEST_ERROR_MESSAGES.INVALID_MONGODB_ID
+    ));
   }
 
-  await body(['id', 'followerId'])
+  await body(fields)
     .optional()
     .isMongoId()
     .run(req);
 
   result = validationResult(req);
   if (!result.isEmpty()) {
-    return next(createHTTPError(400, 'Invalid mongodb id in body.'));
+    return next(createHTTPError(
+      STATUS_CODES.BAD_REQUEST,
+      BAD_REQUEST_ERROR_MESSAGES.INVALID_MONGODB_ID
+    ));
   }
 
   next();
@@ -38,7 +49,8 @@ async function validateId(
 
 
 export {
-  validateNewUserData,
+  validateId,
+  validateNewUserFields,
   validateUserCredentials,
-  validateId
+  validateUserUpdateFields
 };
