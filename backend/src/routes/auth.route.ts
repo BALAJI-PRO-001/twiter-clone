@@ -9,7 +9,7 @@ import {
   validateNewUserFields, 
   validateUserCredentials
 } from '../middlewares/validator';
-import { verifyUserAccessToken } from '../middlewares/verifyUserAccessToken';
+import verifyUserAccessToken  from '../middlewares/verifyUserAccessToken';
 
 
 const router = express.Router();

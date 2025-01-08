@@ -1,6 +1,6 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { validateId, validateUserUpdateFields } from '../middlewares/validator';
-import { verifyUserAccessToken } from '../middlewares/verifyUserAccessToken';
+import verifyUserAccessToken from '../middlewares/verifyUserAccessToken';
 import { 
   getUser, 
   updateUser, 
@@ -9,16 +9,25 @@ import {
 } from '../controllers/user.controller';
 
 
+function validateIdFields(
+  req: Request, 
+  res: Response,
+  next: NextFunction
+): void {
+  validateId(['id', 'followerId'], req, res, next); 
+}
+
+
 const router = express.Router();
 
-router.get('/:id', validateId, verifyUserAccessToken, getUser)
-      .get("/:id/suggested", validateId, verifyUserAccessToken, getSuggestedUsers);
+router.get('/:id', validateIdFields, verifyUserAccessToken, getUser)
+      .get("/:id/suggested", validateIdFields, verifyUserAccessToken, getSuggestedUsers);
 
-router.post('/:id/follow', validateId, toggleFollower);
+router.post('/:id/follow', validateIdFields, toggleFollower);
 
 router.patch(
   '/:id', 
-  validateId,
+  validateIdFields,
   verifyUserAccessToken,
   validateUserUpdateFields,
   updateUser

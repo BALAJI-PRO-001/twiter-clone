@@ -1,0 +1,364 @@
+{
+	"info": {
+		"_postman_id": "11770c40-0430-4b9c-a0ff-5b894a1c4887",
+		"name": "Requests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "40696872"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Signup",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "usersname",
+									"value": "Sam_3",
+									"type": "text"
+								},
+								{
+									"key": "fullName",
+									"value": "https://mern-google-auth.onrender.com/sign-up",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "sam3@gmail.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "sam@1234",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/v1/auth/signup",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"signup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "usersname",
+									"value": "Sam_4",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "samKumar@12",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/v1/auth/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "usersname",
+									"value": "users1",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "ram@1234",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/v1/auth/logout",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Authenticated users",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "usersname",
+									"value": "users1",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "ram@1234",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/v1/auth/userss/authenticated",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"users",
+								"authenticated"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "users",
+			"item": [
+				{
+					"name": "Follow",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "followerId",
+									"value": "677bcd9e70c746d11e59affb",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/v1/users/677aa476e15e4a5a8aebd7c2/follow",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"677aa476e15e4a5a8aebd7c2",
+								"follow"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update users",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "usersname",
+									"value": "Sam_4",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "fullName",
+									"value": "Updated",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "email",
+									"value": "users@gmail.com",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "currentPassword",
+									"value": "ram@1234",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "newPassword",
+									"value": "samKumar@12",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "profileImgURL",
+									"value": "https://example.com/path/to/resource#hash",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "coverImgURL",
+									"value": "https://example.com/path/to/resource#hash",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "bio",
+									"value": "<script>alert()</script>",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "link",
+									"value": "https://example.com/path/to/resource#hash",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/v1/users/677aa476e15e4a5a8aebd7c2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"677aa476e15e4a5a8aebd7c2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Suggested",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "followerId",
+									"value": "677bcd9e70c746d11e59affb",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/v1/users/677aa476e15e4a5a8aebd7c2/suggested",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"677aa476e15e4a5a8aebd7c2",
+								"suggested"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get users",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/v1/users/677bcd9e70c746d11e59affb",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"677bcd9e70c746d11e59affb"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

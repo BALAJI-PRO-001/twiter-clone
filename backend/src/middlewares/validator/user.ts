@@ -1,16 +1,25 @@
-import { Request, Response, NextFunction } from "express";
-import User from '../../models/user.model.js';
-import {
-  body,
-  validationResult,
-  Result,
-} from 'express-validator';
+import { Request, Response, NextFunction } from 'express';
+import User from '../../models/user.model';
+import { createHTTPError } from '../../lib/utils/common';
+import { body, validationResult, Result,} from 'express-validator';
+import { StatusCodes as STATUS_CODES } from 'http-status-codes';
+import { BAD_REQUEST_ERROR_MESSAGES } from '../../constants/httpErrorMessages';
+
 import {
   FormattedUserDataValidationError,
   RequiredFieldsValidationResult,
   ValidationResult,
 } from '../../lib/types';
-import { createHTTPError } from "../../lib/utils/common.js";
+
+import { 
+  BIO_VALIDATION_MESSAGES,
+  EMAIL_VALIDATION_MESSAGES,
+  EMPTY_UPDATE_FIELDS_MESSAGE,
+  PASSWORD_VALIDATION_MESSAGES,
+  REQUIRED_PASSWORD_FIELDS_MESSAGE,
+  USERNAME_VALIDATION_MESSAGES,
+  USER_FULLNAME_VALIDATION_MESSAGES
+} from '../../constants/validationMessages';
 
 
 
@@ -110,8 +119,10 @@ async function validateUsername(
 
   await body('username')
     .trim().escape()
-    .matches(/^[a-zA-Z0-9_]+$/).withMessage('Username can only contain letters, numbers, and underscores.')
-    .isLength({ min: 5 }).withMessage('Username must be at least 5 characters or long.')
+    .matches(/^[a-zA-Z0-9_]+$/)
+    .withMessage(USERNAME_VALIDATION_MESSAGES.REQUIRED_CHARACTERS)
+    .isLength({ min: 5 })
+    .withMessage(USERNAME_VALIDATION_MESSAGES.REQUIRED_LENGTH)
     .run(req);
 
   const result = validationResult(req);
@@ -126,7 +137,7 @@ async function validateUsername(
         isValid: false,
         validationLocation: 'body',
         providedValue: req.body.username,
-        errorMessages: ['Duplicate: Username is already used by another account.'],
+        errorMessages: [ USERNAME_VALIDATION_MESSAGES.DUPLICATE_USER_NAME ],
       };
     }
   }
@@ -143,7 +154,7 @@ async function validateUserFullName(
   await body('fullName')
     .trim().escape()
     .isLength({ min: 5 })
-    .withMessage('User fullname must be at least 5 characters or long.')
+    .withMessage(USER_FULLNAME_VALIDATION_MESSAGES.REQUIRED_LENGTH)
     .run(req);
 
   const result = validationResult(req);
@@ -164,7 +175,8 @@ async function validateEmail(
   await body('email')
     .trim()
     .escape()
-    .isEmail({ host_whitelist: ['gmail.com'] }).withMessage('Please provide valid email.')
+    .isEmail({ host_whitelist: ['gmail.com'] })
+    .withMessage(EMAIL_VALIDATION_MESSAGES.INVALID_EMAIL)
     .run(req);
 
   const result = validationResult(req);
@@ -180,7 +192,7 @@ async function validateEmail(
         isValid: false,
         validationLocation: 'body',
         providedValue: req.body.email,
-        errorMessages: [ 'Duplicate: Email is already used by another account.' ]
+        errorMessages: [  ]
       };
     }
   }
@@ -199,12 +211,13 @@ async function validatePassword(
   await body(fieldName)
   .trim()
   .escape()
-  .isLength({ min: 8 }).withMessage(`${fieldForMessage} must be at least 8 characters or long.`)
+  .isLength({ min: 8 })
+  .withMessage(`${fieldForMessage} ${PASSWORD_VALIDATION_MESSAGES.REQUIRED_LENGTH}`)
   .matches(PASSWORD_REGEX)
-  .withMessage(`${fieldForMessage} must be one character: letter, number, or special character.`)
+  .withMessage(`${fieldForMessage} ${PASSWORD_VALIDATION_MESSAGES.REQUIRED_CHARACTERS}`)
   .custom((password, { req }) => {
     if (password === req.body.username || password === req.body.fullName) {
-      throw new Error(`${fieldForMessage} cannot be the same as username and fullname.`);
+      throw new Error(`${fieldForMessage} ${PASSWORD_VALIDATION_MESSAGES.INVALID_PASSWORD}`);
     }
     return true;
   }).run(req);
@@ -246,7 +259,8 @@ async function validateBio(
   await body('bio')
     .trim()
     .escape()
-    .isString().withMessage('Bio must be string.')
+    .isString()
+    .withMessage(BIO_VALIDATION_MESSAGES.INVALID_BIO)
     .run(req);
 
   const result = validationResult(req);
@@ -267,31 +281,37 @@ export async function validateNewUserFields(
 
   let result = await checkNewUserRequiredFields(req);
   if (!result.isValid) {
-    return validationResultHandler(res, 400, { 
+    return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, { 
       requiredFields: result
     });
   }
 
   result = await validateUsername(req, true);
   if (!result.isValid && result.errorMessages) {
-    const statusCode = result.errorMessages[0].includes('Duplicate') ? 409 : 400;
+    const statusCode = result.errorMessages[0].includes('Duplicate') 
+      ? STATUS_CODES.CONFLICT 
+      : STATUS_CODES.BAD_REQUEST;
+
     return validationResultHandler(res, statusCode, { username: result });
   }
 
   result = await validateUserFullName(req);
   if (!result.isValid) {
-    return validationResultHandler(res, 400, { fullName: result });
+    return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, { fullName: result });
   }
 
   result = await validateEmail(req, true);
   if (!result.isValid && result.errorMessages) {
-    const statusCode = result.errorMessages[0].includes('Duplicate') ? 409 : 400;
+    const statusCode = result.errorMessages[0].includes('Duplicate') 
+      ? STATUS_CODES.CONFLICT 
+      : STATUS_CODES.BAD_REQUEST;
+
     return validationResultHandler(res, statusCode, { email: result });
   }
 
   result = await validatePassword(req, 'password');
   if (!result.isValid) {
-    return validationResultHandler(res, 400, { password: result });
+    return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, { password: result });
   }
 
   next();
@@ -307,19 +327,19 @@ export async function validateUserCredentials(
 
   let result = await checkUserCredentials(req);
   if (!result.isValid) {
-    return validationResultHandler(res, 400, {
+    return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, {
       requiredFields: result
     });
   }
 
   result = await validateUsername(req);
   if (!result.isValid) {
-    return validationResultHandler(res, 400, { result });
+    return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, { result });
   }
 
   result = await validatePassword(req, 'password');
   if (!result.isValid) {
-    return validationResultHandler(res, 400, { password: result });
+    return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, { password: result });
   }
 
   next();
@@ -334,12 +354,12 @@ export async function validateUserUpdateFields(
 ): Promise<void> {
 
   if (Object.keys(req.body).length <= 0) {
-    return validationResultHandler(res, 400, {
+    return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, {
       body: {
         isValid: false,
         validationLocation: 'body',
         providedValue: req.body,
-        errorMessages: [ 'No fields provided for update.' ]
+        errorMessages: [ EMPTY_UPDATE_FIELDS_MESSAGE ]
       }
     });
   }
@@ -347,7 +367,10 @@ export async function validateUserUpdateFields(
   if (req.body.username) {
     const result: any = await validateUsername(req, true);
     if (!result.isValid) {
-      const statusCode = result.errorMessages[0].includes('Duplicate') ? 409 : 400;
+      const statusCode = result.errorMessages[0].includes('Duplicate') 
+        ? STATUS_CODES.CONFLICT 
+        : STATUS_CODES.BAD_REQUEST;
+
       return validationResultHandler(res, statusCode, {
         username: result
       });
@@ -357,7 +380,7 @@ export async function validateUserUpdateFields(
   if (req.body.fullName) {
     const result: any = await validateUserFullName(req); 
     if (!result.isValid) {
-      return validationResultHandler(res, 400, {
+      return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, {
         fullName: result
       });
     }
@@ -366,7 +389,10 @@ export async function validateUserUpdateFields(
   if (req.body.email) {
     const result: any = await validateEmail(req, true);
     if (!result.isValid) {
-      const statusCode = result.errorMessages[0].includes('Duplicate') ? 409 : 400;
+      const statusCode = result.errorMessages[0].includes('Duplicate') 
+        ? STATUS_CODES.CONFLICT 
+        : STATUS_CODES.BAD_REQUEST;
+        
       return validationResultHandler(res, statusCode, {
         email: result
       });
@@ -377,20 +403,20 @@ export async function validateUserUpdateFields(
     req.body.newPassword && !req.body.currentPassword ||
     req.body.currentPassword && !req.body.newPassword
   ) {
-    return next(createHTTPError(400, 'Both current password and new password are required.'));
+    return next(createHTTPError(STATUS_CODES.BAD_REQUEST, REQUIRED_PASSWORD_FIELDS_MESSAGE));
   }
   
   if (req.body.newPassword && req.body.currentPassword) {
     let result = await validatePassword(req, 'newPassword');
     if (!result.isValid) {
-      return validationResultHandler(res, 400, {
+      return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, {
         newPassword: result
       });
     }
 
     result = await validatePassword(req, 'currentPassword');
     if (!result.isValid) {
-      return validationResultHandler(res, 400, {
+      return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, {
         currentPassword: result
       });
     }
@@ -400,7 +426,7 @@ export async function validateUserUpdateFields(
   if (req.body.profileImgURL) {
     const result: any = await validateURL(req, 'profileImgURL');
     if (!result.isValid) {
-      return validationResultHandler(res, 400, {
+      return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, {
         profileImgURL: result
       });
     }
@@ -409,7 +435,7 @@ export async function validateUserUpdateFields(
   if (req.body.coverImgURL) {
     const result: any = await validateURL(req, 'coverImgURL');
     if (!result.isValid) {
-      return validationResultHandler(res, 400, {
+      return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, {
         coverImgURL: result
       });
     }
@@ -418,7 +444,7 @@ export async function validateUserUpdateFields(
   if (req.body.bio) {
     const result = await validateBio(req);
     if (!result.isValid) {
-      return validationResultHandler(res, 400, {
+      return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, {
         bio: result
       });
     }
@@ -428,7 +454,7 @@ export async function validateUserUpdateFields(
   if (req.body.links) {
     const result = await validateURL(req, 'link');
     if (!result.isValid) {
-      return validationResultHandler(res, 400, {
+      return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, {
         links: result
       });
     }

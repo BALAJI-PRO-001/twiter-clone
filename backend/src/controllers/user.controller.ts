@@ -1,10 +1,16 @@
-import { Request, Response, NextFunction } from "express";
-import User from "../models/user.model";
-import { createHTTPError, sanitizeUserAndFormat } from "../lib/utils/common";
-import Notification from "../models/notification.model";
+import { Request, Response, NextFunction } from 'express';
+import User from '../models/user.model';
+import { createHTTPError, sanitizeUserAndFormat } from '../lib/utils/common';
+import Notification from '../models/notification.model';
 import mongoose from 'mongoose';
 import bcryptjs from 'bcryptjs';
-import { v2 as cloudinary } from "cloudinary";
+import { v2 as cloudinary } from 'cloudinary';
+import { StatusCodes as STATUS_CODES } from 'http-status-codes';
+import { 
+  BAD_REQUEST_ERROR_MESSAGES, 
+  NOT_FOUND_ERROR_MESSAGES, 
+  UNAUTHORIZED_ACCESS_ERROR_MESSAGES 
+} from '../constants/httpErrorMessages';
 
 
 export async function getUser(
@@ -15,12 +21,15 @@ export async function getUser(
   try {
     const user = await User.findById(req.params.id);
     if (!user) {
-      return next(createHTTPError(404, 'User not found.'));
+      return next(createHTTPError(
+        STATUS_CODES.NOT_FOUND, 
+        NOT_FOUND_ERROR_MESSAGES.USER
+      ));
     }
 
-    res.status(200).json({
+    res.status(STATUS_CODES.OK).json({
       success: true,
-      statusCode: 200,
+      statusCode: STATUS_CODES.OK,
       data: sanitizeUserAndFormat(user)
     });
   } catch(err) {
@@ -40,26 +49,35 @@ export async function toggleFollower(
     const { followerId } = req.body;
 
     if (currentUserId === followerId) {
-      return next(createHTTPError(400, `You can't follow or unfollow your self.`));
+      return next(createHTTPError(
+        STATUS_CODES.BAD_REQUEST, 
+        BAD_REQUEST_ERROR_MESSAGES.INVALID_FOLLOWER
+      ));
     }
 
     const currentUser = await User.findById(currentUserId);
     if (!currentUser) {
-      return next(createHTTPError(404, `User not found in this id: ${currentUserId}`))
+      return next(createHTTPError(
+        STATUS_CODES.NOT_FOUND, 
+        `${NOT_FOUND_ERROR_MESSAGES.USER} ID: ${currentUserId}`
+      ));
     }
 
     const userToModify = await User.findById(followerId);
     if (!userToModify) {
-      return next(createHTTPError(404, `Follower not found in this id: ${followerId}`))
+      return next(createHTTPError(
+        STATUS_CODES.NOT_FOUND, 
+        `${NOT_FOUND_ERROR_MESSAGES.USER} ID: ${currentUserId}`
+      ));
     }
 
     const isFollowing = currentUser.following.includes(followerId);
     if (isFollowing) { 
       await User.findByIdAndUpdate(followerId, { $pull: { followers: currentUserId }}); 
       await User.findByIdAndUpdate(currentUserId, { $pull: { following: followerId }});
-      res.status(200).json({
+      res.status(STATUS_CODES.OK).json({
         success: true,
-        statusCode: 200,
+        statusCode: STATUS_CODES.OK,
         message: 'User unfollowed successfully.'
       });
     } else {
@@ -73,9 +91,9 @@ export async function toggleFollower(
       });
       await newNotification.save();
 
-      res.status(200).json({
+      res.status(STATUS_CODES.OK).json({
         success: true,
-        statusCode: 200,
+        statusCode: STATUS_CODES.OK,
         message: 'User followed successfully.'
       });
     }
@@ -95,7 +113,10 @@ export async function getSuggestedUsers(
     const currentUserId = new mongoose.Types.ObjectId(req.params.id);
     const usersFollowedByMe = await User.findById(currentUserId).select('following');
     if (!usersFollowedByMe) {
-      return next(createHTTPError(404, 'User not found.'));
+      return next(createHTTPError(
+        STATUS_CODES.NOT_FOUND, 
+        NOT_FOUND_ERROR_MESSAGES.USER
+      ));
     }
 
     const users = await User.aggregate([
@@ -110,9 +131,9 @@ export async function getSuggestedUsers(
 
     const suggestedUsers = filteredUsers.slice(0, 4);
     
-    res.status(200).json({
+    res.status(STATUS_CODES.OK).json({
       success: true,
-      statusCode: 200,
+      statusCode: STATUS_CODES.OK,
       data: {
         users: suggestedUsers
       }
@@ -134,7 +155,10 @@ export async function updateUser(
     const user = await User.findById(userId);
 
     if (!user) {
-      return next(createHTTPError(404, 'User not found.'));
+      return next(createHTTPError(
+        STATUS_CODES.NOT_FOUND,
+        NOT_FOUND_ERROR_MESSAGES.USER
+      ));
     }
 
     const { username, fullName, email, currentPassword, newPassword, bio, link } = req.body;
@@ -143,7 +167,10 @@ export async function updateUser(
     if (currentPassword && newPassword) {
       const isMatch = await bcryptjs.compare(currentPassword, user.password);
       if (!isMatch) {
-        return next(createHTTPError(401, 'Unauthorized: Invalid password.'));
+        return next(createHTTPError(
+          STATUS_CODES.UNAUTHORIZED,
+          UNAUTHORIZED_ACCESS_ERROR_MESSAGES.PASSWORD
+        ));
       }
 
       const salt = await bcryptjs.genSalt(10);
@@ -179,9 +206,9 @@ export async function updateUser(
     user.link = link || user.link;
 
     const updatedUser = await user.save();
-    res.status(200).json({
+    res.status(STATUS_CODES.OK).json({
       success: true,
-      statusCode: 200,
+      statusCode: STATUS_CODES.OK,
       data: {
         user: sanitizeUserAndFormat(updatedUser)
       }
