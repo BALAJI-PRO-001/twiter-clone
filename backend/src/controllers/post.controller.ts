@@ -16,7 +16,10 @@ export async function createPost(
     if (!user) {
       return next(createHTTPError(404, 'User not found.'));
     }
-
+    
+    res.status(200).json({
+      data: req.body
+    });
 
   } catch(err) {
     next(err);

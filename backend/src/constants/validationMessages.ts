@@ -30,3 +30,6 @@ export const BIO_VALIDATION_MESSAGES = {
 
 export const EMPTY_UPDATE_FIELDS_MESSAGE = 'No fields provided for update.';
 export const REQUIRED_PASSWORD_FIELDS_MESSAGE = 'Both current password and new password are required.';
+
+export const POST_TEXT_VALIDATION_MESSAGE = 'Text message must be string.';
+export const POST_MISSING_FIELDS_MESSAGE = 'Post must have text or imgURL.';
