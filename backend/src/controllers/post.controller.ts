@@ -66,10 +66,10 @@ export async function toggleLike(
 ): Promise<void> {
   
   try {
-    const { id } = req.params;
+    const postId = req.params.id;
     const userId = new mongoose.Types.ObjectId(req.verifiedUserId);
 
-    const post = await Post.findById(id);
+    const post = await Post.findById(postId);
     if (!post) {
       return next(createHTTPError(
         STATUS_CODES.NOT_FOUND,
@@ -79,7 +79,8 @@ export async function toggleLike(
 
     const isUserAlreadyLiked = post.likes.includes(userId);
     if (isUserAlreadyLiked) {
-      await Post.updateOne({ _id: id }, { $pull: { likes: userId }});
+      await Post.updateOne({ _id: postId }, { $pull: { likes: userId }});
+      await User.updateOne({ _id: userId }, { $pull: { likedPosts: postId }});
       res.status(STATUS_CODES.OK).json({
         success: true,
         statusCode: STATUS_CODES.OK,
@@ -87,6 +88,7 @@ export async function toggleLike(
       });
     } else {
       post.likes.push(userId);
+      await User.updateOne({ _id: userId }, { $push: { likedPosts: postId }});
       await post.save();
 
       const newNotification = new Notification({
@@ -117,7 +119,7 @@ export async function commentOnPost(
 
   try {
     const { text } = req.body;
-    const { id } = req.params;
+    const postId = req.body.id;
     const userId = req.verifiedUserId;
 
     if (!text) {
@@ -127,7 +129,7 @@ export async function commentOnPost(
       )); 
     }
 
-    const post = await Post.findById(id);
+    const post = await Post.findById(postId);
     if (!post) {
       return next(createHTTPError(
         STATUS_CODES.NOT_FOUND,
@@ -198,8 +200,53 @@ export async function getAllPosts(
   next: NextFunction
 ) {
   try {
-    const posts = await Post.find()
+    let posts = await Post.find()
       .sort({ createdAt: -1 })
+      .populate({
+        path: 'userRef',
+        select: '-password'
+      })
+      .populate({
+        path: 'comments.userRef',
+        select: '-password'
+      });
+
+    if (posts.length === 0) {
+      posts = [];
+    }
+
+    res.status(STATUS_CODES.OK).json({
+      success: true,
+      statusCode: STATUS_CODES.OK,
+      data: {
+        posts: posts
+      }
+    });
+  } catch(err) {
+    next(err);
+  } 
+}
+
+
+
+export async function getLikedPosts(
+  req: Request, 
+  res: Response,
+  next: NextFunction
+) {
+
+  try {
+    const userId = req.verifiedUserId;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return next(createHTTPError(
+        STATUS_CODES.NOT_FOUND,
+        NOT_FOUND_ERROR_MESSAGES.USER
+      ));
+    }
+
+    const likedPosts = await Post.find({ _id: { $in: user.likedPosts }})
       .populate({
         path: 'userRef',
         select: '-password'
@@ -212,11 +259,25 @@ export async function getAllPosts(
     res.status(STATUS_CODES.OK).json({
       success: true,
       statusCode: STATUS_CODES.OK,
-      data: {
-        posts: posts
+      data: { 
+        likedPosts: likedPosts 
       }
     });
   } catch(err) {
+    next(err);    
+  }
+}
+
+
+export async function getFollowingPosts(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  
+  try {
+    
+  } catch(err) {
     next(err);
-  } 
+  }
 }
