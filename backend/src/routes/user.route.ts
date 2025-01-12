@@ -33,34 +33,15 @@ function validateIdFields(
 
 const router = express.Router();
 
-router.get(
-  GET_USER_PATH,
-  validateIdFields,
-  verifyUserAccessToken,
-  getUser
-);
+router.get(GET_USER_PATH, validateIdFields, verifyUserAccessToken, getUser)
+      .get(GET_SUGGESTED_USERS_PATH, validateIdFields, verifyUserAccessToken, getSuggestedUsers);
 
-
-router.get(
-  GET_SUGGESTED_USERS_PATH,
-  validateIdFields,
-  verifyUserAccessToken,
-  getSuggestedUsers
-);
-
-
-router.post(
-  FOLLOW_PATH, 
-  validateIdFields, 
-  verifyUserAccessToken, 
-  toggleFollower
-);
-
+router.post(FOLLOW_PATH, validateIdFields, verifyUserAccessToken, toggleFollower);
 
 router.patch(
-  UPDATE_USER_PATH,
-  validateIdFields,
-  verifyUserAccessToken,
+  UPDATE_USER_PATH, 
+  validateIdFields, 
+  verifyUserAccessToken, 
   validateUserUpdateFields,
   updateUser
 );

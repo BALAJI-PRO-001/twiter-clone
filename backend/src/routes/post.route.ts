@@ -7,7 +7,9 @@ import {
   toggleLike,
   commentOnPost,
   deletePost,
-  getAllPosts
+  getAllPosts,
+  getLikedPosts,
+  getFollowingPosts
 } from '../controllers/post.controller';
 
 import ROUTES from '../constants/routes';
@@ -18,7 +20,9 @@ const {
   CREATE_POST_PATH,
   LIKE_POST_PATH,
   COMMENT_POST_PATH,
-  DELETE_POST_PATH
+  DELETE_POST_PATH,
+  GET_LIKED_POSTS_PATH,
+  GET_FOLLOWING_POSTS_PATH
 } = ROUTES.V1.POST;
 
 
@@ -34,34 +38,17 @@ function validateIdFields(
 }
 
 
-router.get(GET_ALL_POSTS_PATH, verifyUserAccessToken, getAllPosts);
+router.get(GET_ALL_POSTS_PATH, verifyUserAccessToken, getAllPosts)
+      .get(GET_LIKED_POSTS_PATH, verifyUserAccessToken, getLikedPosts)
+      .get(GET_FOLLOWING_POSTS_PATH, verifyUserAccessToken, getFollowingPosts);
 
-router.post(
-  CREATE_POST_PATH,
-  validateNewPostData,
-  verifyUserAccessToken,
-  createPost
-);
 
-router.post(
-  LIKE_POST_PATH, 
-  validateIdFields, 
-  verifyUserAccessToken, 
-  toggleLike
-);
+router.post(CREATE_POST_PATH, validateNewPostData, verifyUserAccessToken, createPost)
+      .post(LIKE_POST_PATH, validateIdFields, verifyUserAccessToken, toggleLike)
+      .post(COMMENT_POST_PATH, validateIdFields, verifyUserAccessToken, commentOnPost);
 
-router.post(
-  COMMENT_POST_PATH, 
-  validateIdFields, 
-  verifyUserAccessToken, 
-  commentOnPost
-);
 
-router.delete(
-  DELETE_POST_PATH, 
-  validateIdFields, 
-  verifyUserAccessToken, 
-  deletePost
-);
-      
+router.delete(DELETE_POST_PATH, validateIdFields, verifyUserAccessToken, deletePost);
+    
+
 export default router;
