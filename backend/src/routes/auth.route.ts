@@ -1,15 +1,16 @@
 import express from 'express';
+import verifyUserAccessToken  from '../middlewares/verifyUserAccessToken';
 import { 
   signup, 
   login, 
   logout, 
   getAuthenticatedUser 
 } from '../controllers/auth.controller';
+
 import { 
   validateNewUserFields, 
   validateUserCredentials
 } from '../middlewares/validator';
-import verifyUserAccessToken  from '../middlewares/verifyUserAccessToken';
 
 
 const router = express.Router();

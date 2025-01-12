@@ -3,7 +3,7 @@ export interface HTTPError extends Error {
   message: string;
 }
 
-export interface FormattedUserDataValidationError {
+export interface FormattedDataValidationError {
   isValid: boolean;
   validationLocation: string;
   providedValue: string;

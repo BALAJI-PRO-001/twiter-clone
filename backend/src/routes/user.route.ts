@@ -5,7 +5,8 @@ import {
   getUser, 
   updateUser, 
   toggleFollower, 
-  getSuggestedUsers, 
+  getSuggestedUsers,
+  deleteUser, 
 } from '../controllers/user.controller';
 
 
@@ -23,7 +24,7 @@ const router = express.Router();
 router.get('/:id', validateIdFields, verifyUserAccessToken, getUser)
       .get("/:id/suggested", validateIdFields, verifyUserAccessToken, getSuggestedUsers);
 
-router.post('/:id/follow', validateIdFields, toggleFollower);
+router.post('/:id/follow', validateIdFields, verifyUserAccessToken, toggleFollower);
 
 router.patch(
   '/:id', 
@@ -32,5 +33,9 @@ router.patch(
   validateUserUpdateFields,
   updateUser
 );
+
+
+router.delete('/:id', validateIdFields, verifyUserAccessToken, deleteUser);
+
 
 export default router;

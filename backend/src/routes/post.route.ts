@@ -1,17 +1,18 @@
 import express, { Request, Response, NextFunction } from 'express';
-import { validateId } from '../middlewares/validator';
+import { validateId , validateNewPostData } from '../middlewares/validator';
 import verifyUserAccessToken from '../middlewares/verifyUserAccessToken';
 import {
   createPost,
   toggleLike,
-  commentOnPost
+  commentOnPost,
+  deletePost
 } from '../controllers/post.controller';
 
 const router = express.Router();
 
 
 function validateIdFields(
-  req: Request, 
+  req: Request,
   res: Response,
   next: NextFunction
 ): void {
@@ -19,8 +20,17 @@ function validateIdFields(
 }
 
 
-router.post('', validateIdFields, verifyUserAccessToken, createPost)
-      .post('/:id/like', validateIdFields, verifyUserAccessToken, toggleLike)
-      .post('/:id/comment', validateIdFields, commentOnPost);
+router.post(
+  '',
+  validateNewPostData,
+  verifyUserAccessToken,
+  createPost
+);
 
+router.post('/:id/like', validateIdFields, verifyUserAccessToken, toggleLike)
+      .post('/:id/comment', validateIdFields, verifyUserAccessToken, commentOnPost);
+
+
+router.delete('/:id', validateIdFields, verifyUserAccessToken, deletePost);
+      
 export default router;
