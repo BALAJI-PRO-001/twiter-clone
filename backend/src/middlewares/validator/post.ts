@@ -18,17 +18,6 @@ import {
 async function checkRequiredNewPostFields(
   req: Request,
 ): Promise<RequiredFieldsValidationResult> {
-
-  await checkRequiredFiled(req, 'userId');
-
-  const result = validationResult(req).formatWith((err) => err.msg);
-  if (!result.isEmpty()) {
-    return {
-      isValid: false,
-      validationLocation: 'body',
-      errorMessages: result.array()
-    };
-  }
   
   if (!req.body.text && !req.body.imgURL) {
     return {
