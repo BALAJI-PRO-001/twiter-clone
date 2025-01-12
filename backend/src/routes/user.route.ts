@@ -1,33 +1,64 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { validateId, validateUserUpdateFields } from '../middlewares/validator';
 import verifyUserAccessToken from '../middlewares/verifyUserAccessToken';
-import { 
-  getUser, 
-  updateUser, 
-  toggleFollower, 
+
+import {
+  getUser,
+  updateUser,
+  toggleFollower,
   getSuggestedUsers,
-  deleteUser, 
+  deleteUser,
 } from '../controllers/user.controller';
+
+import ROUTES from '../constants/routes';
+
+
+const {
+  GET_USER_PATH,
+  GET_SUGGESTED_USERS_PATH,
+  FOLLOW_PATH,
+  UPDATE_USER_PATH,
+  DELETE_USER_PATH
+} = ROUTES.V1.USER;
 
 
 function validateIdFields(
-  req: Request, 
+  req: Request,
   res: Response,
   next: NextFunction
 ): void {
-  validateId(['id', 'followerId'], req, res, next); 
+  validateId(['id', 'followerId'], req, res, next);
 }
 
 
 const router = express.Router();
 
-router.get('/:id', validateIdFields, verifyUserAccessToken, getUser)
-      .get("/:id/suggested", validateIdFields, verifyUserAccessToken, getSuggestedUsers);
+router.get(
+  GET_USER_PATH,
+  validateIdFields,
+  verifyUserAccessToken,
+  getUser
+);
 
-router.post('/:id/follow', validateIdFields, verifyUserAccessToken, toggleFollower);
+
+router.get(
+  GET_SUGGESTED_USERS_PATH,
+  validateIdFields,
+  verifyUserAccessToken,
+  getSuggestedUsers
+);
+
+
+router.post(
+  FOLLOW_PATH, 
+  validateIdFields, 
+  verifyUserAccessToken, 
+  toggleFollower
+);
+
 
 router.patch(
-  '/:id', 
+  UPDATE_USER_PATH,
   validateIdFields,
   verifyUserAccessToken,
   validateUserUpdateFields,
@@ -35,7 +66,12 @@ router.patch(
 );
 
 
-router.delete('/:id', validateIdFields, verifyUserAccessToken, deleteUser);
+router.delete(
+  DELETE_USER_PATH, 
+  validateIdFields, 
+  verifyUserAccessToken, 
+  deleteUser
+);
 
 
 export default router;

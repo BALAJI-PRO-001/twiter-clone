@@ -1,14 +1,18 @@
 import { Request, Response, NextFunction } from 'express';
 import User from '../models/user.model';
 import Post from '../models/post.modal';  
+import Notification from '../models/notification.model';
 import { createHTTPError } from '../lib/utils/common';
-import { StatusCodes as STATUS_CODES } from 'http-status-codes';
+import { StatusCodes as STATUS_CODES, StatusCodes } from 'http-status-codes';
 import { v2 as cloudinary } from 'cloudinary';
+
 import { 
   NOT_FOUND_ERROR_MESSAGES,
   UNAUTHORIZED_ACCESS_ERROR_MESSAGES
 } from '../constants/httpErrorMessages';
 
+import { TEXT_FIELD_NOT_PROVIDED } from '../constants/validationMessages';
+import mongoose from 'mongoose';
 
 
 export async function createPost(
@@ -40,9 +44,9 @@ export async function createPost(
     }); 
 
     await newPost.save();
-    res.status(STATUS_CODES.OK).json({
+    res.status(STATUS_CODES.CREATED).json({
       success: true,
-      statusCode: STATUS_CODES.OK,
+      statusCode: STATUS_CODES.CREATED,
       data: {
         post: newPost
       }
@@ -60,7 +64,47 @@ export async function toggleLike(
   res: Response,
   next: NextFunction
 ): Promise<void> {
+  
+  try {
+    const { id } = req.params;
+    const userId = new mongoose.Types.ObjectId(req.verifiedUserId);
 
+    const post = await Post.findById(id);
+    if (!post) {
+      return next(createHTTPError(
+        STATUS_CODES.NOT_FOUND,
+        NOT_FOUND_ERROR_MESSAGES.POST
+      ));
+    }
+
+    const isUserAlreadyLiked = post.likes.includes(userId);
+    if (isUserAlreadyLiked) {
+      await Post.updateOne({ _id: id }, { $pull: { likes: userId }});
+      res.status(STATUS_CODES.OK).json({
+        success: true,
+        statusCode: STATUS_CODES.OK,
+        message: 'Post unliked successfully.'
+      });
+    } else {
+      post.likes.push(userId);
+      await post.save();
+
+      const newNotification = new Notification({
+        from: userId,
+        to: post.userRef,
+        type: 'like'
+      });
+
+      res.status(STATUS_CODES.OK).json({
+        success: true,
+        statusCode: STATUS_CODES.OK, 
+        message: 'Post liked successfully.'
+      });
+    }
+
+  } catch(err) {
+
+  }
 }
 
 
@@ -71,6 +115,40 @@ export async function commentOnPost(
   next: NextFunction
 ): Promise<void> {
 
+  try {
+    const { text } = req.body;
+    const { id } = req.params;
+    const userId = req.verifiedUserId;
+
+    if (!text) {
+      return next(createHTTPError(
+        STATUS_CODES.BAD_REQUEST,
+        TEXT_FIELD_NOT_PROVIDED
+      )); 
+    }
+
+    const post = await Post.findById(id);
+    if (!post) {
+      return next(createHTTPError(
+        STATUS_CODES.NOT_FOUND,
+        NOT_FOUND_ERROR_MESSAGES.POST
+      ));
+    }
+
+    const comment = { userRef: userId, text: text };
+    post.comments.push(comment);
+    await post.save();
+
+    res.status(STATUS_CODES.OK).json({
+      success: true,
+      statusCode: STATUS_CODES.OK,
+      data: {
+        post: post 
+      }
+    });
+  } catch(err) {
+    next(err);
+  }
 }
 
 
@@ -80,6 +158,7 @@ export async function deletePost(
   res: Response,
   next: NextFunction
 ): Promise<void> {
+
   try {
     const { id } = req.params;
     const post = await Post.findById(id);
@@ -109,4 +188,35 @@ export async function deletePost(
   } catch(err) {
     next(err);
   }
+}
+
+
+
+export async function getAllPosts(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const posts = await Post.find()
+      .sort({ createdAt: -1 })
+      .populate({
+        path: 'userRef',
+        select: '-password'
+      })
+      .populate({
+        path: 'comments.userRef',
+        select: '-password'
+      });
+
+    res.status(STATUS_CODES.OK).json({
+      success: true,
+      statusCode: STATUS_CODES.OK,
+      data: {
+        posts: posts
+      }
+    });
+  } catch(err) {
+    next(err);
+  } 
 }

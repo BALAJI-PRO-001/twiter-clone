@@ -13,6 +13,9 @@ import {
   UNAUTHORIZED_ACCESS_ERROR_MESSAGES 
 } from '../constants/httpErrorMessages';
 
+import {
+  FOLLOWER_ID_NOT_PROVIDED  
+} from '../constants/validationMessages';
 
 
 export async function getUser(
@@ -71,7 +74,7 @@ export async function toggleFollower(
     if (!followerId) {
       return next(createHTTPError(
         STATUS_CODES.BAD_REQUEST,
-        BAD_REQUEST_ERROR_MESSAGES.FOLLOWER_ID_NOT_PROVIDED
+        FOLLOWER_ID_NOT_PROVIDED
       ));
     }
 
