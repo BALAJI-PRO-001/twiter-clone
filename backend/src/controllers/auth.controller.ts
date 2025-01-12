@@ -16,7 +16,7 @@ export async function signup(
   req: Request,
   res: Response, 
   next: NextFunction
-): Promise<void> {
+) {
   try {
     const { username, fullName, email, password } = req.body;
     const salt = await bcryptjs.genSalt(10);
@@ -62,7 +62,7 @@ export async function login(
   req: Request, 
   res: Response, 
   next: NextFunction
-): Promise<void> {
+) {
   try { 
     const { username, password } = req.body;
     const user = await User.findOne({ username: username });
@@ -100,7 +100,7 @@ export async function logout(
   req: Request, 
   res: Response, 
   next: NextFunction
-): Promise<void> {
+)  {
   try {
     res.status(STATUS_CODES.OK)
        .clearCookie('user_access_token')
@@ -120,7 +120,7 @@ export async function getAuthenticatedUser(
   req: Request,
   res: Response,
   next: NextFunction
-): Promise<void> {  
+) {  
   try {
     const user = await User.findById(req.verifiedUserId as string);
     if (!user) {

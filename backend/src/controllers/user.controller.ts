@@ -5,7 +5,8 @@ import Notification from '../models/notification.model';
 import mongoose from 'mongoose';
 import bcryptjs from 'bcryptjs';
 import { v2 as cloudinary } from 'cloudinary';
-import { StatusCodes as STATUS_CODES } from 'http-status-codes';
+import { StatusCodes as STATUS_CODES, StatusCodes } from 'http-status-codes';
+
 import { 
   BAD_REQUEST_ERROR_MESSAGES, 
   NOT_FOUND_ERROR_MESSAGES, 
@@ -13,18 +14,29 @@ import {
 } from '../constants/httpErrorMessages';
 
 
+
 export async function getUser(
   req: Request, 
   res: Response,
   next: NextFunction
-): Promise<void> {
+) {
+
   try {
+    if (req.verifiedUserId !== req.params.id) {
+      return next(createHTTPError(
+        STATUS_CODES.UNAUTHORIZED,
+        UNAUTHORIZED_ACCESS_ERROR_MESSAGES.USER.INVALID_USER_ID
+      ));
+    }
+
     const user = await User.findById(req.params.id);
     if (!user) {
-      return next(createHTTPError(
-        STATUS_CODES.NOT_FOUND, 
-        NOT_FOUND_ERROR_MESSAGES.USER
-      ));
+      res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        statusCode: STATUS_CODES.NOT_FOUND,
+        message: NOT_FOUND_ERROR_MESSAGES.USER
+      });
+      return;
     }
 
     res.status(STATUS_CODES.OK).json({
@@ -43,10 +55,25 @@ export async function toggleFollower(
   req: Request,
   res: Response,
   next: NextFunction
-): Promise<void> {
+) {
+
   try {
+    if (req.verifiedUserId !== req.params.id) {
+      return next(createHTTPError(
+        STATUS_CODES.UNAUTHORIZED,
+        UNAUTHORIZED_ACCESS_ERROR_MESSAGES.USER.INVALID_USER_ID
+      ));
+    }
+
     const currentUserId = req.params.id;
     const { followerId } = req.body;
+
+    if (!followerId) {
+      return next(createHTTPError(
+        STATUS_CODES.BAD_REQUEST,
+        BAD_REQUEST_ERROR_MESSAGES.FOLLOWER_ID_NOT_PROVIDED
+      ));
+    }
 
     if (currentUserId === followerId) {
       return next(createHTTPError(
@@ -58,18 +85,19 @@ export async function toggleFollower(
     const currentUser = await User.findById(currentUserId);
     if (!currentUser) {
       return next(createHTTPError(
-        STATUS_CODES.NOT_FOUND, 
-        `${NOT_FOUND_ERROR_MESSAGES.USER} ID: ${currentUserId}`
+        STATUS_CODES.NOT_FOUND,
+        NOT_FOUND_ERROR_MESSAGES.USER + ` ID: ${currentUserId}.`
       ));
     }
 
     const userToModify = await User.findById(followerId);
     if (!userToModify) {
       return next(createHTTPError(
-        STATUS_CODES.NOT_FOUND, 
-        `${NOT_FOUND_ERROR_MESSAGES.USER} ID: ${currentUserId}`
+        STATUS_CODES.NOT_FOUND,
+        NOT_FOUND_ERROR_MESSAGES.USER + ` ID: ${followerId}.`
       ));
     }
+
 
     const isFollowing = currentUser.following.includes(followerId);
     if (isFollowing) { 
@@ -109,7 +137,15 @@ export async function getSuggestedUsers(
   res: Response,
   next: NextFunction
 ) {
+
   try {
+    if (req.verifiedUserId !== req.params.id) {
+      return next(createHTTPError(
+        STATUS_CODES.UNAUTHORIZED,
+        UNAUTHORIZED_ACCESS_ERROR_MESSAGES.USER.INVALID_USER_ID
+      ));
+    }
+
     const currentUserId = new mongoose.Types.ObjectId(req.params.id);
     const usersFollowedByMe = await User.findById(currentUserId).select('following');
     if (!usersFollowedByMe) {
@@ -149,16 +185,24 @@ export async function updateUser(
   req: Request,
   res: Response,
   next: NextFunction
-): Promise<void> {
-  try {
-    const userId = req.params.id;
-    const user = await User.findById(userId);
+) {
 
-    if (!user) {
+  try {
+    if (req.verifiedUserId !== req.params.id) {
       return next(createHTTPError(
-        STATUS_CODES.NOT_FOUND,
-        NOT_FOUND_ERROR_MESSAGES.USER
+        STATUS_CODES.UNAUTHORIZED,
+        UNAUTHORIZED_ACCESS_ERROR_MESSAGES.USER.INVALID_USER_ID
       ));
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        statusCode: STATUS_CODES.NOT_FOUND,
+        message: NOT_FOUND_ERROR_MESSAGES.USER
+      });
+      return;
     }
 
     const { username, fullName, email, currentPassword, newPassword, bio, link } = req.body;
@@ -213,6 +257,45 @@ export async function updateUser(
         user: sanitizeUserAndFormat(updatedUser)
       }
     });  
+  } catch(err) {
+    next(err);
+  }
+}
+
+
+
+export async function deleteUser(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+
+  try {
+    if (req.verifiedUserId !== req.params.id) {
+      return next(createHTTPError(
+        STATUS_CODES.UNAUTHORIZED,
+        UNAUTHORIZED_ACCESS_ERROR_MESSAGES.USER.INVALID_USER_ID
+      ));
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      res.status(STATUS_CODES.NOT_FOUND).json({
+        success: false,
+        statusCode: STATUS_CODES.NOT_FOUND,
+        message: NOT_FOUND_ERROR_MESSAGES.USER
+      });
+      return;
+    }
+
+    if (!user) {
+      return next(createHTTPError(
+        STATUS_CODES.NOT_FOUND,
+        NOT_FOUND_ERROR_MESSAGES.USER
+      ));
+    }
+
+    res.status(STATUS_CODES.NO_CONTENT).json({});
   } catch(err) {
     next(err);
   }
