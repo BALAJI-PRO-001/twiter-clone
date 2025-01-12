@@ -5,7 +5,8 @@
   "main": "./backend/src/index.ts",
   "scripts": {
     "watch": "concurrently \"tsc --watch\" \"nodemon --watch ./backend/dist --exec 'node' ./backend/dist/index.js\"",
-    "start": "node ./backend/dist/index.ts"
+    "start": "node ./backend/dist/index.ts",
+    "build": "tsc"
   },
   "repository": {
     "type": "git",

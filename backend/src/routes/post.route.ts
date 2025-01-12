@@ -4,7 +4,8 @@ import verifyUserAccessToken from '../middlewares/verifyUserAccessToken';
 import {
   createPost,
   toggleLike,
-  commentOnPost
+  commentOnPost,
+  deletePost
 } from '../controllers/post.controller';
 
 const router = express.Router();
@@ -19,8 +20,17 @@ function validateIdFields(
 }
 
 
-router.post('', validateNewPostData, validateIdFields, verifyUserAccessToken, createPost)
-  .post('/:id/like', validateIdFields, verifyUserAccessToken, toggleLike)
-  .post('/:id/comment', validateIdFields, commentOnPost);
+router.post(
+  '',
+  validateNewPostData,
+  verifyUserAccessToken,
+  createPost
+);
 
+router.post('/:id/like', validateIdFields, verifyUserAccessToken, toggleLike)
+      .post('/:id/comment', validateIdFields, verifyUserAccessToken, commentOnPost);
+
+
+router.delete('/:id', validateIdFields, verifyUserAccessToken, deletePost);
+      
 export default router;

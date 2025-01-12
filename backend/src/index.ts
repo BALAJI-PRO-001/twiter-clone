@@ -3,8 +3,9 @@ import * as mongodb from './db';
 import dotenv from 'dotenv';
 import { extractErrorMessage } from './lib/utils/common';
 import { SERVER_START_MSG } from './constants/logMessages';
+import { ENV_FILE_PATH } from './constants/constants';
 
-dotenv.config();
+dotenv.config({ path: ENV_FILE_PATH });
 
 async function main() {
   try {
