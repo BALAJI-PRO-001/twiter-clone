@@ -9,7 +9,8 @@ import {
   deletePost,
   getAllPosts,
   getLikedPosts,
-  getFollowingPosts
+  getFollowingPosts,
+  getUserPosts
 } from '../controllers/post.controller';
 
 import ROUTES from '../constants/routes';
@@ -22,7 +23,8 @@ const {
   COMMENT_POST_PATH,
   DELETE_POST_PATH,
   GET_LIKED_POSTS_PATH,
-  GET_FOLLOWING_POSTS_PATH
+  GET_FOLLOWING_POSTS_PATH,
+  GET_USER_POSTS_PATH
 } = ROUTES.V1.POST;
 
 
@@ -40,7 +42,8 @@ function validateIdFields(
 
 router.get(GET_ALL_POSTS_PATH, verifyUserAccessToken, getAllPosts)
       .get(GET_LIKED_POSTS_PATH, verifyUserAccessToken, getLikedPosts)
-      .get(GET_FOLLOWING_POSTS_PATH, verifyUserAccessToken, getFollowingPosts);
+      .get(GET_FOLLOWING_POSTS_PATH, verifyUserAccessToken, getFollowingPosts)
+      .get(GET_USER_POSTS_PATH, verifyUserAccessToken, getUserPosts);
 
 
 router.post(CREATE_POST_PATH, validateNewPostData, verifyUserAccessToken, createPost)
