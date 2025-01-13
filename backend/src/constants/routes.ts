@@ -24,9 +24,15 @@ const ROUTES = {
       GET_FOLLOWING_POSTS_PATH: '/following',
       GET_USER_POSTS_PATH: '/:username',
       LIKE_POST_PATH: '/:id/likes',
-      CREATE_POST_PATH: '',
+      CREATE_POST_PATH: '/',
       COMMENT_POST_PATH: '/:id/comments',
       DELETE_POST_PATH: '/:id',
+    },
+
+    NOTIFICATION: {
+      BASE_URL: '/api/v1/notifications',
+      GET_NOTIFICATIONS_PATH: '/',
+      DELETE_NOTIFICATIONS_PATH: '/'
     }
   }
 };
