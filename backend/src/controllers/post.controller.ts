@@ -246,7 +246,7 @@ export async function getLikedPosts(
       ));
     }
 
-    const likedPosts = await Post.find({ _id: { $in: user.likedPosts }})
+    const posts = await Post.find({ _id: { $in: user.likedPosts }})
       .populate({
         path: 'userRef',
         select: '-password'
@@ -260,7 +260,7 @@ export async function getLikedPosts(
       success: true,
       statusCode: STATUS_CODES.OK,
       data: { 
-        likedPosts: likedPosts 
+        posts: posts 
       }
     });
   } catch(err) {
@@ -276,7 +276,76 @@ export async function getFollowingPosts(
 ) {
   
   try {
+    const userId = req.verifiedUserId;
+    const user = await User.findById(userId);
     
+    if (!user) {
+      return next(createHTTPError(
+        STATUS_CODES.NOT_FOUND,
+        NOT_FOUND_ERROR_MESSAGES.USER
+      ));
+    }
+
+    const posts = await Post.find({ userRef: { $in: user.following }})
+      .sort({ createdAt: -1 })
+      .populate({
+        path: 'userRef',
+        select: '-password'
+      })
+      .populate({
+        path: 'comments.userRef',
+        select: '-password'
+      });
+
+    res.status(STATUS_CODES.OK).json({
+      success: true,
+      statusCode: STATUS_CODES.OK,
+      data: {
+        posts: posts
+      }
+    });
+  } catch(err) {
+    next(err);
+  }
+}
+
+
+
+export async function getUserPosts(
+  req: Request, 
+  res: Response,
+  next: NextFunction
+) {
+  
+  try {
+    const username = req.params.username;
+    const user = await User.findOne({ username });
+
+    if (!user) {
+      return next(createHTTPError(
+        STATUS_CODES.NOT_FOUND,
+        NOT_FOUND_ERROR_MESSAGES.USER
+      ));
+    }
+
+    const posts = await Post.find({ userRef: user._id })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: 'userRef',
+        select: '-password'
+      })
+      .populate({
+        path: 'comments.userRef',
+        select: '-password'
+      });
+
+    res.status(STATUS_CODES.OK).json({
+      success: true,
+      statusCode: STATUS_CODES.OK,
+      data: {
+        posts: posts
+      }
+    });
   } catch(err) {
     next(err);
   }
