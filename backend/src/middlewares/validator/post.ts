@@ -1,6 +1,6 @@
 import { body, validationResult } from 'express-validator';
 import { NextFunction, Request, Response } from 'express';
-import { checkRequiredFiled, extractFormattedValidationError, validateURL, validationResultHandler } from './common';
+import { extractFormattedValidationError, validateURL, validationResultHandler } from './common';
 import { StatusCodes as STATUS_CODES, StatusCodes } from 'http-status-codes';
 import { 
   POST_TEXT_VALIDATION_MESSAGE,

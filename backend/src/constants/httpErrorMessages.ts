@@ -17,8 +17,7 @@ export const BAD_REQUEST_ERROR_MESSAGES = {
   INVALID_PAYLOAD: 'Bad Request: Invalid token payload.',
   INVALID_MONGODB_ID: 'Bad Request: Invalid mongodb database id.',
   INVALID_USER_DATA: 'Bad Request: Invalid user data.',
-  INVALID_FOLLOWER: `You can't follow or unfollow your self.`,
-  FOLLOWER_ID_NOT_PROVIDED: 'Follower id is required.'
+  INVALID_FOLLOWER: `Bad Request: You can't follow or unfollow your self.`, 
 };
 
 

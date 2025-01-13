@@ -31,5 +31,7 @@ export const BIO_VALIDATION_MESSAGES = {
 export const EMPTY_UPDATE_FIELDS_MESSAGE = 'No fields provided for update.';
 export const REQUIRED_PASSWORD_FIELDS_MESSAGE = 'Both current password and new password are required.';
 
-export const POST_TEXT_VALIDATION_MESSAGE = 'Text message must be string.';
+export const POST_TEXT_VALIDATION_MESSAGE = 'Text message must be at least 5 characters or long.';
 export const POST_MISSING_FIELDS_MESSAGE = 'Post must have text or imgURL.';
+export const FOLLOWER_ID_NOT_PROVIDED = 'Follower id is required.';
+export const TEXT_FIELD_NOT_PROVIDED = 'Text field is required.';

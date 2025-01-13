@@ -18,7 +18,7 @@ export function createHTTPError(statusCode: number, message: string): HTTPError 
 
 export function sanitizeUserAndFormat(user: any) {
   return {
-    id: user._id,
+    _id: user._id,
     username: user.username,
     fullName: user.fullName,
     email: user.email,

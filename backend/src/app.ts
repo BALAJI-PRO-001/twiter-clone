@@ -4,7 +4,9 @@ import { v2 as cloudinary } from 'cloudinary';
 import authRouter from './routes/auth.route';
 import userRouter from './routes/user.route';
 import postRouter from './routes/post.route';
+import notificationRouter from './routes/notification.route';
 import cloudinaryConfig from './config/cloudinary';
+import ROUTES from './constants/routes';
 import errorResponseHandler from './middlewares/errorResponseHandler';
 
 const app = express();
@@ -18,9 +20,10 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 /* Router config */
-app.use('/api/v1/auth', authRouter);
-app.use('/api/v1/users', userRouter);
-app.use('/api/v1/posts', postRouter);
+app.use(ROUTES.V1.AUTHENTICATION.BASE_URL, authRouter);
+app.use(ROUTES.V1.USER.BASE_URL, userRouter);
+app.use(ROUTES.V1.POST.BASE_URL, postRouter);
+app.use(ROUTES.V1.NOTIFICATION.BASE_URL, notificationRouter);
 
 /* Global error handler middleware function */
 app.use(errorResponseHandler);

@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "11770c40-0430-4b9c-a0ff-5b894a1c4887",
+		"_postman_id": "4b4ae454-6a2a-4704-918c-5e877125abe0",
 		"name": "Requests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "40696872"
@@ -18,18 +18,18 @@
 							"mode": "urlencoded",
 							"urlencoded": [
 								{
-									"key": "usersname",
-									"value": "Sam_3",
+									"key": "username",
+									"value": "Sam_1",
 									"type": "text"
 								},
 								{
 									"key": "fullName",
-									"value": "https://mern-google-auth.onrender.com/sign-up",
+									"value": "Sam_1",
 									"type": "text"
 								},
 								{
 									"key": "email",
-									"value": "sam3@gmail.com",
+									"value": "sam@gmail.com",
 									"type": "text"
 								},
 								{
@@ -65,13 +65,13 @@
 							"mode": "urlencoded",
 							"urlencoded": [
 								{
-									"key": "usersname",
-									"value": "Sam_4",
+									"key": "username",
+									"value": "Sam_1",
 									"type": "text"
 								},
 								{
 									"key": "password",
-									"value": "samKumar@12",
+									"value": "sam@1234",
 									"type": "text"
 								}
 							]
@@ -157,7 +157,7 @@
 							]
 						},
 						"url": {
-							"raw": "http://localhost:3000/api/v1/auth/userss/authenticated",
+							"raw": "http://localhost:3000/api/v1/auth/user/authenticated",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -167,7 +167,7 @@
 								"api",
 								"v1",
 								"auth",
-								"users",
+								"user",
 								"authenticated"
 							]
 						}
@@ -177,7 +177,7 @@
 			]
 		},
 		{
-			"name": "users",
+			"name": "User",
 			"item": [
 				{
 					"name": "Follow",
@@ -189,13 +189,13 @@
 							"urlencoded": [
 								{
 									"key": "followerId",
-									"value": "677bcd9e70c746d11e59affb",
+									"value": "678335ed8c1b4cc3c4d11ea2",
 									"type": "text"
 								}
 							]
 						},
 						"url": {
-							"raw": "http://localhost:3000/api/v1/users/677aa476e15e4a5a8aebd7c2/follow",
+							"raw": "http://localhost:3000/api/v1/users/678335ed8c1b4cc3c4d11eae/follow",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -205,7 +205,7 @@
 								"api",
 								"v1",
 								"users",
-								"677aa476e15e4a5a8aebd7c2",
+								"678335ed8c1b4cc3c4d11eae",
 								"follow"
 							]
 						}
@@ -221,16 +221,14 @@
 							"mode": "urlencoded",
 							"urlencoded": [
 								{
-									"key": "usersname",
-									"value": "Sam_4",
-									"type": "text",
-									"disabled": true
+									"key": "username",
+									"value": "RamKu_1",
+									"type": "text"
 								},
 								{
 									"key": "fullName",
-									"value": "Updated",
-									"type": "text",
-									"disabled": true
+									"value": "Ram updated",
+									"type": "text"
 								},
 								{
 									"key": "email",
@@ -277,7 +275,7 @@
 							]
 						},
 						"url": {
-							"raw": "http://localhost:3000/api/v1/users/677aa476e15e4a5a8aebd7c2",
+							"raw": "http://localhost:3000/api/v1/users/6782840babd4d39bb35fca51",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -287,7 +285,7 @@
 								"api",
 								"v1",
 								"users",
-								"677aa476e15e4a5a8aebd7c2"
+								"6782840babd4d39bb35fca51"
 							]
 						}
 					},
@@ -312,7 +310,7 @@
 							]
 						},
 						"url": {
-							"raw": "http://localhost:3000/api/v1/users/677aa476e15e4a5a8aebd7c2/suggested",
+							"raw": "http://localhost:3000/api/v1/users/6782840babd4d39bb35fca51/suggested",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -322,7 +320,7 @@
 								"api",
 								"v1",
 								"users",
-								"677aa476e15e4a5a8aebd7c2",
+								"6782840babd4d39bb35fca51",
 								"suggested"
 							]
 						}
@@ -330,7 +328,7 @@
 					"response": []
 				},
 				{
-					"name": "Get users",
+					"name": "Get user",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
@@ -342,7 +340,7 @@
 							"urlencoded": []
 						},
 						"url": {
-							"raw": "http://localhost:3000/api/v1/users/677bcd9e70c746d11e59affb",
+							"raw": "http://localhost:3000/api/v1/users/6782840babd4d39bb35fca51",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -352,7 +350,274 @@
 								"api",
 								"v1",
 								"users",
-								"677bcd9e70c746d11e59affb"
+								"6782840babd4d39bb35fca51"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/v1/users/6782840babd4d39bb35fca51",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"6782840babd4d39bb35fca51"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Post",
+			"item": [
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "userId",
+									"value": "677bcd9e70c746d11e59affb",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "text",
+									"value": "Hi iam",
+									"type": "text"
+								},
+								{
+									"key": "imgURL",
+									"value": "http://google.com",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/v1/posts",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"posts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Comment",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "userId",
+									"value": "677bcd9e70c746d11e59affb",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "text",
+									"value": "Hi aim Balaji",
+									"type": "text"
+								},
+								{
+									"key": "imgURL",
+									"value": "http://google.com",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/v1/posts/6783448cdb211d0d3dac405a/comments",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"posts",
+								"6783448cdb211d0d3dac405a",
+								"comments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Like",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "userId",
+									"value": "677bcd9e70c746d11e59affb",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "text",
+									"value": "Hi aim Balaji",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "imgURL",
+									"value": "http://google.com",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/v1/posts/6783448cdb211d0d3dac405a/likes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"posts",
+								"6783448cdb211d0d3dac405a",
+								"likes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "userId",
+									"value": "677bcd9e70c746d11e59affb",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "text",
+									"value": "<script>",
+									"type": "text"
+								},
+								{
+									"key": "imgURL",
+									"value": "http://google.com",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/v1/posts/678342fbc6c4d95f606c4d2a",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"posts",
+								"678342fbc6c4d95f606c4d2a"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Posts",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/v1/posts/all",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"posts",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Liked Posts",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/v1/posts/liked-posts",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"posts",
+								"liked-posts"
 							]
 						}
 					},
