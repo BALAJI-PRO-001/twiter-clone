@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { ENV_FILE_PATH } from '../constants/constants';
+import { ENV_FILE_PATH } from '../constants';
 
 dotenv.config({ path: ENV_FILE_PATH });
 
