@@ -3,7 +3,7 @@ import * as mongodb from './db';
 import dotenv from 'dotenv';
 import { extractErrorMessage } from './lib/utils/common';
 import { SERVER_START_MSG } from './constants/logMessages';
-import { ENV_FILE_PATH } from './constants/constants';
+import { ENV_FILE_PATH } from './constants';
 
 dotenv.config({ path: ENV_FILE_PATH });
 
