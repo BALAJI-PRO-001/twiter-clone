@@ -1,4 +1,6 @@
 import { HTTPError } from '../types';
+import { USER_REQUIRED_FIELDS_FOR_FORMAT_AND_SANITIZE } from '../../constants';
+
 import { 
   StatusCodes as STATUS_CODES, 
   getReasonPhrase 
@@ -23,11 +25,6 @@ export function createHTTPError(
 
 
 export function sanitizeUserAndFormat(user: any) {
-  const requiredFields = [
-    '_id', 'username', 'fullName', 'email',
-    'followers', 'following', 'profileImgURL',
-    'coverImgURL', 'bio', 'link'
-  ];
   const message = `The provided user data is invalid and cannot be formatted or sanitized.`;
 
   if (typeof user !== 'object' || user === null || Array.isArray(user)) {
@@ -37,7 +34,7 @@ export function sanitizeUserAndFormat(user: any) {
   let { password:_, ...userFields } = user;
   userFields = Object.keys(userFields);
 
-  if (requiredFields.toString() !== userFields.toString()) {
+  if (USER_REQUIRED_FIELDS_FOR_FORMAT_AND_SANITIZE.toString() !== userFields.toString()) {
     throw new Error(message);
   }
 
