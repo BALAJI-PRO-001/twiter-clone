@@ -1,6 +1,6 @@
-# Full Stack Twitter Clone
+# Full Stack X Clone
 
-This project is a full-stack web application built as a practice project for mastering full-stack web development. It replicates the core functionality of Twitter, including user authentication, creating and following users, posting tweets, and viewing others' timelines.
+This project is a full-stack web application built as a practice project for mastering full-stack web development. It replicates the core functionality of x, including user authentication, creating and following users, posting tweets, and viewing others' timelines.
 
 ## Tech Stack
 
@@ -45,9 +45,9 @@ To set up the project locally, follow the steps below.
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/BALAJI-PRO-001/twitter-clone.git
+   git clone https://github.com/BALAJI-PRO-001/x-clone.git
 
-   cd twitter-clone
+   cd x-clone
 
 2. Create .env file in root folder:
    ```bash
