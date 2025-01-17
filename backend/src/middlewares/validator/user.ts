@@ -80,7 +80,7 @@ async function validateUsername(
 
   await body('username')
     .trim().escape()
-    .matches(/^[a-zA-Z0-9_]+$/)
+    .matches(/^[a-z0-9_]+$/)
     .withMessage(USERNAME_VALIDATION_MESSAGES.REQUIRED_CHARACTERS)
     .isLength({ min: 5 })
     .withMessage(USERNAME_VALIDATION_MESSAGES.REQUIRED_LENGTH)
