@@ -19,9 +19,11 @@ const Posts = () => {
       )}
       {!isLoading && POSTS && (
         <div>
-          {POSTS.map((post) => (
-            <Post key={post._id} post={post} />
-          ))}
+          {
+            POSTS.map((post) => {
+              return <Post key={post._id} post={post}></Post>
+            })
+          }
         </div>
       )}
     </>
