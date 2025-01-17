@@ -7,15 +7,11 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 const Post = ({ post }) => {
-  console.log(post);
   const [comment, setComment] = useState("");
   const postOwner = post.user;
   const isLiked = false;
-
   const isMyPost = true;
-
   const formattedDate = "1h";
-
   const isCommenting = false;
 
   const handleDeletePost = () => {};
@@ -34,7 +30,7 @@ const Post = ({ post }) => {
             to={`/profile/${postOwner.username}`}
             className="w-8 rounded-full overflow-hidden"
           >
-            <img src={postOwner.profileImg || "/avatar-placeholder.png"} />
+            <img src={postOwner.profileImgURL || "/avatar-placeholder.png"} />
           </Link>
         </div>
         <div className="flex flex-col flex-1">
@@ -59,7 +55,7 @@ const Post = ({ post }) => {
             )}
           </div>
           <div className="flex flex-col gap-3 overflow-hidden">
-            <span>{post.text}</span>
+            <span className="mt-2">{post.text}</span>
             {post.img && (
               <img
                 src={post.img}
