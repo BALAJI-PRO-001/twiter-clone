@@ -63,7 +63,7 @@ const CreatePost = () => {
         )}
 
         <div className="flex justify-between border-t py-2 border-t-gray-700">
-          <div className="flex gap-3 items-center">
+          <div className="flex mt-2 gap-3 items-center">
             <CiImageOn
               className="fill-primary w-6 h-6 cursor-pointer"
               onClick={() => imgRef.current.click()}
@@ -77,7 +77,7 @@ const CreatePost = () => {
             ref={imgRef}
             onChange={handleImgChange}
           />
-          <button className="btn btn-primary rounded-full btn-sm text-white px-4">
+          <button className="btn mt-2 btn-primary rounded-full btn-sm text-white px-4">
             {isPending ? "Posting..." : "Post"}
           </button>
         </div>

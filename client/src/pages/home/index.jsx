@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Posts from "../../components/common/Post";
+import Posts from "../../components/common/Posts";
 import CreatePost from "./CreatePost";
 
 const Home = () => {
@@ -31,11 +31,7 @@ const Home = () => {
             )}
           </div>
         </div>
-
-        {/*  CREATE POST INPUT */}
         <CreatePost />
-
-        {/* POSTS */}
         <Posts />
       </div>
     </>
