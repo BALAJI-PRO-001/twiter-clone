@@ -7,6 +7,12 @@ import { MdOutlineMail } from "react-icons/md";
 import { FaUser } from "react-icons/fa";
 import { MdPassword } from "react-icons/md";
 import { MdDriveFileRenameOutline } from "react-icons/md";
+import { 
+  USERNAME_VALIDATION_MESSAGES,
+  FULLNAME_VALIDATION_MESSAGES,
+  EMAIL_VALIDATION_MESSAGES,
+  PASSWORD_VALIDATION_MESSAGES
+} from '../../../constants/validator/messages.js';
 
 import { 
   validateUsername,
@@ -26,8 +32,27 @@ const Signup = () => {
     password: "",
   });
 
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!formData.username) {
+      return setErrMessage(USERNAME_VALIDATION_MESSAGES.EMPTY);
+    }
+
+    if (!formData.fullName) {
+      return setErrMessage(FULLNAME_VALIDATION_MESSAGES.EMPTY);
+    }
+
+    if (!formData.email) {
+      return setErrMessage(EMAIL_VALIDATION_MESSAGES.EMPTY);
+    }
+
+    if (!formData.password) {
+       setErrMessage("Password " + PASSWORD_VALIDATION_MESSAGES.EMPTY);
+    }
+
+    
   };
 
 
