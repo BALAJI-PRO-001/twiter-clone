@@ -3,7 +3,7 @@ import { FormattedDataValidationError, ValidationResult } from '../../lib/types'
 import { Request, Response, NextFunction } from 'express';
 import { createHTTPError } from '../../lib/utils/common';
 import { StatusCodes as STATUS_CODES } from 'http-status-codes';
-import { BAD_REQUEST_ERROR_MESSAGES } from '../../constants/httpErrorMessages';
+import { BAD_REQUEST_ERROR_MESSAGES } from '../../constants/http/errorMessages';
 
 
 
@@ -24,29 +24,32 @@ export function extractFormattedValidationError(
   validationResult: Result
 ): FormattedDataValidationError {
 
-  const errorMessages: Result<string> = validationResult.formatWith((err) => err.msg as string);
   const error = validationResult.array({ onlyFirstError: true })[0];
   return {
-    isValid: false,
-    validationLocation: error.location,
+    field: error.path,
+    location: error.location,
     providedValue: error.value,
-    errorMessages: errorMessages.array(),
+    message: error.msg 
   };
 }
 
 
 
 
-export function validationResultHandler(
+export function validationErrorHandler(
   res: Response,
   statusCode: number,
-  validationResults: { [key: string]: any }
+  message: string,
+  error: any
 ): void {
 
   res.status(statusCode).json({
     success: false,
-    statusCode: statusCode,
-    validationResults: validationResults
+    message: message,
+    error: {
+      code: statusCode,
+      ...error
+    }
   });
 }
 

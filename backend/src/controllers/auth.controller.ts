@@ -1,14 +1,19 @@
 import bcryptjs from 'bcryptjs';
 import User from '../models/user.model';
-import { createHTTPError, sanitizeUserAndFormat } from '../lib/utils/common';
+import { createHTTPError } from '../lib/utils/common';
 import { Request, Response, NextFunction } from 'express';
 import { generateAccessTokenAndSetCookie } from '../lib/utils/generateAccessTokenAndSetCookie';
 import { StatusCodes as STATUS_CODES } from 'http-status-codes';
+
+import { 
+  AUTHENTICATION_MESSAGES
+} from '../constants/http/responseMessages';
+
 import { 
   BAD_REQUEST_ERROR_MESSAGES, 
   NOT_FOUND_ERROR_MESSAGES,
   UNAUTHORIZED_ACCESS_ERROR_MESSAGES
-} from '../constants/httpErrorMessages';
+} from '../constants/http/errorMessages';
 
 
 
@@ -22,7 +27,7 @@ export async function signup(
     const salt = await bcryptjs.genSalt(10);
     const hashedPassword = await bcryptjs.hash(password, salt);
 
-    const newUser = new User({
+    const newUser: any = new User({
       username: username,
       fullName: fullName,
       email: email,
@@ -37,11 +42,13 @@ export async function signup(
       });
       await newUser.save();
 
+      const { password:_, ...rest } = newUser._doc;
+
       res.status(STATUS_CODES.CREATED).json({
         success: true,
-        statusCode: STATUS_CODES.CREATED,
+        message: AUTHENTICATION_MESSAGES.USER.SIGN_UP,
         data: {
-          user: sanitizeUserAndFormat(newUser)
+          user: rest
         }
       });
       return;
@@ -65,7 +72,7 @@ export async function login(
 ) {
   try { 
     const { username, password } = req.body;
-    const user = await User.findOne({ username: username });
+    const user: any = await User.findOne({ username: username });
 
     if (!user) {
       return next(createHTTPError(STATUS_CODES.NOT_FOUND, NOT_FOUND_ERROR_MESSAGES.USERNAME));
@@ -82,11 +89,12 @@ export async function login(
       secure: process.env.NODE_ENV !== 'development'
     });
 
+    const { password:_, ...rest } = user._doc;
     res.status(STATUS_CODES.OK).json({
       success: true,
-      statusCode: STATUS_CODES.OK,
+      message: AUTHENTICATION_MESSAGES.USER.LOGGED_IN,
       data: {
-        user: sanitizeUserAndFormat(user)
+        user: rest
       }
     });
   } catch(err) {
@@ -106,8 +114,7 @@ export async function logout(
        .clearCookie('user_access_token')
        .json({
           success: true,
-          statusCode: STATUS_CODES.OK,
-          message: "Logged out successfully."
+          message: AUTHENTICATION_MESSAGES.USER.LOGGED_OUT
        });
   } catch(err) {
     next(err);
@@ -122,16 +129,17 @@ export async function getAuthenticatedUser(
   next: NextFunction
 ) {  
   try {
-    const user = await User.findById(req.verifiedUserId as string);
+    const user: any = await User.findById(req.verifiedUserId as string);
     if (!user) {
       return next(createHTTPError(STATUS_CODES.NOT_FOUND, NOT_FOUND_ERROR_MESSAGES.USER));
     }
   
+    const { password:_, ...rest } = user._doc;
     res.status(200).json({
       success: true,
-      statusCode: 200,
+      message: AUTHENTICATION_MESSAGES.USER.AUTH_USER_INFO,
       data: {
-        user: sanitizeUserAndFormat(user)
+        user: rest
       }
     });
   } catch(err) {

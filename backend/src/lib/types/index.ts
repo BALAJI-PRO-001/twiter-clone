@@ -4,10 +4,10 @@ export interface HTTPError extends Error {
 }
 
 export interface FormattedDataValidationError {
-  isValid: boolean;
-  validationLocation: string;
+  field: string;
+  location: string;
   providedValue: string;
-  errorMessages: string[];
+  message: string; 
 }
 
 export interface ValidationResult {
@@ -18,8 +18,8 @@ export interface ValidationResult {
 
 export interface RequiredFieldsValidationResult {
   isValid?: boolean;
-  validationLocation?: string;
-  errorMessages?: string[];
+  location?: string;
+  messages?: string[];
 }
 
 

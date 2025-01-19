@@ -3,16 +3,17 @@ import User from '../models/user.model';
 import Post from '../models/post.modal';  
 import Notification from '../models/notification.model';
 import { createHTTPError } from '../lib/utils/common';
-import { StatusCodes as STATUS_CODES, StatusCodes } from 'http-status-codes';
+import { StatusCodes as STATUS_CODES } from 'http-status-codes';
 import { v2 as cloudinary } from 'cloudinary';
 
 import { 
   NOT_FOUND_ERROR_MESSAGES,
   UNAUTHORIZED_ACCESS_ERROR_MESSAGES
-} from '../constants/httpErrorMessages';
+} from '../constants/http/errorMessages';
 
 import { TEXT_FIELD_NOT_PROVIDED } from '../constants/validationMessages';
 import mongoose from 'mongoose';
+import { POST_MESSAGES } from '../constants/http/responseMessages';
 
 
 export async function createPost(
@@ -26,7 +27,10 @@ export async function createPost(
     const user = await User.findById(userId);
 
     if (!user) {
-      return next(createHTTPError(404, 'User not found.'));
+      return next(createHTTPError(
+        STATUS_CODES.NOT_FOUND, 
+        NOT_FOUND_ERROR_MESSAGES.USER
+      ));
     }
 
     const { text } = req.body;
@@ -46,7 +50,7 @@ export async function createPost(
     await newPost.save();
     res.status(STATUS_CODES.CREATED).json({
       success: true,
-      statusCode: STATUS_CODES.CREATED,
+      message: POST_MESSAGES.CREATED,
       data: {
         post: newPost
       }
@@ -83,8 +87,7 @@ export async function toggleLike(
       await User.updateOne({ _id: userId }, { $pull: { likedPosts: postId }});
       res.status(STATUS_CODES.OK).json({
         success: true,
-        statusCode: STATUS_CODES.OK,
-        message: 'Post unliked successfully.'
+        message: POST_MESSAGES.UNLIKED,
       });
     } else {
       post.likes.push(userId);
@@ -96,11 +99,11 @@ export async function toggleLike(
         to: post.userRef,
         type: 'like'
       });
+      await newNotification.save();
 
       res.status(STATUS_CODES.OK).json({
         success: true,
-        statusCode: STATUS_CODES.OK, 
-        message: 'Post liked successfully.'
+        message: POST_MESSAGES.LIKED
       });
     }
 
@@ -119,7 +122,7 @@ export async function commentOnPost(
 
   try {
     const { text } = req.body;
-    const postId = req.body.id;
+    const postId = req.params.id;
     const userId = req.verifiedUserId;
 
     if (!text) {
@@ -143,7 +146,7 @@ export async function commentOnPost(
 
     res.status(STATUS_CODES.OK).json({
       success: true,
-      statusCode: STATUS_CODES.OK,
+      message: POST_MESSAGES.COMMENTED,
       data: {
         post: post 
       }
@@ -217,7 +220,7 @@ export async function getAllPosts(
 
     res.status(STATUS_CODES.OK).json({
       success: true,
-      statusCode: STATUS_CODES.OK,
+      message: POST_MESSAGES.GET_ALL_POSTS,
       data: {
         posts: posts
       }
@@ -258,7 +261,7 @@ export async function getLikedPosts(
 
     res.status(STATUS_CODES.OK).json({
       success: true,
-      statusCode: STATUS_CODES.OK,
+      message: POST_MESSAGES.GET_LIKED_POSTS,
       data: { 
         posts: posts 
       }
@@ -299,7 +302,7 @@ export async function getFollowingPosts(
 
     res.status(STATUS_CODES.OK).json({
       success: true,
-      statusCode: STATUS_CODES.OK,
+      message: POST_MESSAGES.GET_FOLLOWING_POSTS,
       data: {
         posts: posts
       }
@@ -341,7 +344,7 @@ export async function getUserPosts(
 
     res.status(STATUS_CODES.OK).json({
       success: true,
-      statusCode: STATUS_CODES.OK,
+      message: POST_MESSAGES.GET_OWN_POSTS,
       data: {
         posts: posts
       }

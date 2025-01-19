@@ -5,7 +5,7 @@ import { StatusCodes as STATUS_CODES } from 'http-status-codes';
 import { 
   UNAUTHORIZED_ACCESS_ERROR_MESSAGES,
   BAD_REQUEST_ERROR_MESSAGES
-} from '../constants/httpErrorMessages';
+} from '../constants/http/errorMessages';
 
 
 
