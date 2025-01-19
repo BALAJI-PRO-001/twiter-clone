@@ -1,6 +1,6 @@
 import { body, validationResult } from 'express-validator';
 import { NextFunction, Request, Response } from 'express';
-import { extractFormattedValidationError, validateURL, validationResultHandler } from './common';
+import { extractFormattedValidationError, validateURL, validationErrorHandler } from './common';
 import { StatusCodes as STATUS_CODES, StatusCodes } from 'http-status-codes';
 import { 
   POST_TEXT_VALIDATION_MESSAGE,
@@ -12,6 +12,7 @@ import {
   RequiredFieldsValidationResult, 
   ValidationResult
 } from '../../lib/types';
+import { VALIDATION_TITLES } from '../../constants';
 
 
 
@@ -21,9 +22,8 @@ async function checkRequiredNewPostFields(
   
   if (!req.body.text && !req.body.imgURL) {
     return {
-      isValid: false,
-      validationLocation: 'body',
-      errorMessages: [ POST_MISSING_FIELDS_MESSAGE ]
+      location: 'body',
+      messages: [ POST_MISSING_FIELDS_MESSAGE ]
     }; 
   }
 
@@ -60,27 +60,36 @@ export async function validateNewPostData(
 
   let result = await checkRequiredNewPostFields(req);
   if (!result.isValid) {
-    return validationResultHandler(res, 400, {
-      requiredFields: result
-    });
+    return validationErrorHandler(
+      res, 
+      STATUS_CODES.NOT_FOUND, 
+      VALIDATION_TITLES.DATA_VALIDATION,
+      result
+    );
   }
 
 
   if (req.body.text) {
     result = await validateText(req);
     if (!result.isValid) {
-      return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, {
-        text: result
-      });
+      return validationErrorHandler(
+        res, 
+        STATUS_CODES.BAD_REQUEST, 
+        VALIDATION_TITLES.DATA_VALIDATION,
+        result
+      );
     }
   }
 
   if (req.body.imgURL) {
     result = await validateURL(req, 'imgURL');
     if (!result.isValid) {
-      return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, {
-        imgURL: result
-      })
+      return validationErrorHandler(
+        res, 
+        STATUS_CODES.BAD_REQUEST, 
+        VALIDATION_TITLES.DATA_VALIDATION,
+        result
+      );
     }
   }
 
