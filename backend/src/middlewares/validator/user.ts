@@ -3,11 +3,12 @@ import User from '../../models/user.model';
 import { createHTTPError } from '../../lib/utils/common';
 import { body, validationResult, Result, } from 'express-validator';
 import { StatusCodes as STATUS_CODES } from 'http-status-codes';
+import { VALIDATION_TITLES } from '../../constants';
 
 import {
   checkRequiredFiled,
   extractFormattedValidationError,
-  validationResultHandler,
+  validationErrorHandler,
   validateURL
 } from './common';
 
@@ -41,9 +42,8 @@ async function checkNewUserRequiredFields(
   const results = validationResult(req).formatWith((err) => err.msg as string);
   if (!results.isEmpty()) {
     return {
-      isValid: false,
-      validationLocation: 'body',
-      errorMessages: results.array()
+      location: 'body',
+      messages: results.array()
     };
   }
 
@@ -62,9 +62,8 @@ async function checkUserCredentials(
   const results: Result<string> = validationResult(req).formatWith((err) => err.msg as string);
   if (!results.isEmpty()) {
     return {
-      isValid: false,
-      validationLocation: 'body',
-      errorMessages: results.array()
+      location: 'body',
+      messages: results.array()
     };
   }
 
@@ -80,12 +79,15 @@ async function validateUsername(
 
   await body('username')
     .trim().escape()
-    .matches(/^[a-z0-9_]+$/)
-    .withMessage(USERNAME_VALIDATION_MESSAGES.REQUIRED_CHARACTERS)
     .isLength({ min: 5 })
     .withMessage(USERNAME_VALIDATION_MESSAGES.REQUIRED_LENGTH)
+    .bail()
+    .matches(/^[a-zA-Z0-9_]+$/)
+    .withMessage(USERNAME_VALIDATION_MESSAGES.REQUIRED_CHARACTERS)
+    .bail()
+    .toLowerCase()
     .run(req);
-
+    
   const result = validationResult(req);
   if (!result.isEmpty()) {
     return extractFormattedValidationError(result);
@@ -95,10 +97,10 @@ async function validateUsername(
     const isUsernameAlreadyInUse = await User.findOne({ username: req.body.username });
     if (isUsernameAlreadyInUse) {
       return {
-        isValid: false,
-        validationLocation: 'body',
+        field: 'username',
+        location: 'body',
         providedValue: req.body.username,
-        errorMessages: [USERNAME_VALIDATION_MESSAGES.DUPLICATE_USER_NAME],
+        message: USERNAME_VALIDATION_MESSAGES.DUPLICATE_USER_NAME,
       };
     }
   }
@@ -138,6 +140,7 @@ async function validateEmail(
     .escape()
     .isEmail({ host_whitelist: ['gmail.com'] })
     .withMessage(EMAIL_VALIDATION_MESSAGES.INVALID_EMAIL)
+    .normalizeEmail({ all_lowercase: true })
     .run(req);
 
   const result = validationResult(req);
@@ -150,10 +153,10 @@ async function validateEmail(
 
     if (isEmailAlreadyInUse) {
       return {
-        isValid: false,
-        validationLocation: 'body',
+        field: 'email',
+        location: 'body',
         providedValue: req.body.email,
-        errorMessages: []
+        message: EMAIL_VALIDATION_MESSAGES.DUPLICATE_EMAIL
       };
     }
   }
@@ -174,8 +177,10 @@ async function validatePassword(
     .escape()
     .isLength({ min: 8 })
     .withMessage(`${fieldForMessage} ${PASSWORD_VALIDATION_MESSAGES.REQUIRED_LENGTH}`)
+    .bail()
     .matches(PASSWORD_REGEX)
     .withMessage(`${fieldForMessage} ${PASSWORD_VALIDATION_MESSAGES.REQUIRED_CHARACTERS}`)
+    .bail()
     .custom((password, { req }) => {
       if (password === req.body.username || password === req.body.fullName) {
         throw new Error(`${fieldForMessage} ${PASSWORD_VALIDATION_MESSAGES.INVALID_PASSWORD}`);
@@ -220,39 +225,62 @@ export async function validateNewUserFields(
   next: NextFunction
 ): Promise<void> {
 
-  let result = await checkNewUserRequiredFields(req);
+  let result: any = await checkNewUserRequiredFields(req);
   if (!result.isValid) {
-    return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, {
-      requiredFields: result
-    });
+    return validationErrorHandler(
+      res, 
+      STATUS_CODES.BAD_REQUEST, 
+      VALIDATION_TITLES.REQUIRED_FIELDS,
+      result
+    );
   }
 
   result = await validateUsername(req, true);
-  if (!result.isValid && result.errorMessages) {
-    const statusCode = result.errorMessages[0].includes('Duplicate')
+  if (!result.isValid) {
+    const statusCode = result.message.includes('Duplicate')
       ? STATUS_CODES.CONFLICT
       : STATUS_CODES.BAD_REQUEST;
 
-    return validationResultHandler(res, statusCode, { username: result });
+    return validationErrorHandler(
+      res, 
+      statusCode, 
+      VALIDATION_TITLES.DATA_VALIDATION,
+      result
+    );
   }
 
   result = await validateUserFullName(req);
   if (!result.isValid) {
-    return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, { fullName: result });
+    return validationErrorHandler(
+      res, 
+      STATUS_CODES.BAD_REQUEST,
+      VALIDATION_TITLES.DATA_VALIDATION, 
+      result
+    );
   }
 
   result = await validateEmail(req, true);
-  if (!result.isValid && result.errorMessages) {
-    const statusCode = result.errorMessages[0].includes('Duplicate')
+  if (!result.isValid) {
+    const statusCode = result.message.includes('Duplicate')
       ? STATUS_CODES.CONFLICT
       : STATUS_CODES.BAD_REQUEST;
 
-    return validationResultHandler(res, statusCode, { email: result });
+    return validationErrorHandler(
+      res, 
+      statusCode, 
+      VALIDATION_TITLES.DATA_VALIDATION,
+      result
+    );
   }
 
   result = await validatePassword(req, 'password');
   if (!result.isValid) {
-    return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, { password: result });
+    return validationErrorHandler(
+      res, 
+      STATUS_CODES.BAD_REQUEST, 
+      VALIDATION_TITLES.DATA_VALIDATION,
+      result  
+    );
   }
 
   next();
@@ -268,19 +296,32 @@ export async function validateUserCredentials(
 
   let result = await checkUserCredentials(req);
   if (!result.isValid) {
-    return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, {
-      requiredFields: result
-    });
+    return validationErrorHandler(
+      res, 
+      STATUS_CODES.BAD_REQUEST,
+      VALIDATION_TITLES.REQUIRED_FIELDS,
+      result
+    );
   }
 
   result = await validateUsername(req);
   if (!result.isValid) {
-    return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, { result });
+    return validationErrorHandler(
+      res, 
+      STATUS_CODES.BAD_REQUEST,
+      VALIDATION_TITLES.DATA_VALIDATION,
+      result
+    );
   }
 
   result = await validatePassword(req, 'password');
   if (!result.isValid) {
-    return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, { password: result });
+    return validationErrorHandler(
+      res, 
+      STATUS_CODES.BAD_REQUEST, 
+      VALIDATION_TITLES.DATA_VALIDATION,
+      result
+    );
   }
 
   next();
@@ -295,14 +336,15 @@ export async function validateUserUpdateFields(
 ): Promise<void> {
 
   if (Object.keys(req.body).length <= 0) {
-    return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, {
-      body: {
-        isValid: false,
-        validationLocation: 'body',
-        providedValue: req.body,
-        errorMessages: [EMPTY_UPDATE_FIELDS_MESSAGE]
+    return validationErrorHandler(
+      res, 
+      STATUS_CODES.BAD_REQUEST, 
+      VALIDATION_TITLES.REQUIRED_FIELDS,
+      {
+        location: 'body',
+        messages: [ EMPTY_UPDATE_FIELDS_MESSAGE ]
       }
-    });
+    );
   }
 
   if (req.body.username) {
@@ -312,18 +354,24 @@ export async function validateUserUpdateFields(
         ? STATUS_CODES.CONFLICT
         : STATUS_CODES.BAD_REQUEST;
 
-      return validationResultHandler(res, statusCode, {
-        username: result
-      });
+      return validationErrorHandler(
+        res, 
+        statusCode, 
+        VALIDATION_TITLES.DATA_VALIDATION,
+        result
+      );
     }
   }
 
   if (req.body.fullName) {
     const result: any = await validateUserFullName(req);
     if (!result.isValid) {
-      return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, {
-        fullName: result
-      });
+      return validationErrorHandler(
+        res, 
+        STATUS_CODES.BAD_REQUEST, 
+        VALIDATION_TITLES.DATA_VALIDATION,
+        result
+      );
     }
   }
 
@@ -334,9 +382,12 @@ export async function validateUserUpdateFields(
         ? STATUS_CODES.CONFLICT
         : STATUS_CODES.BAD_REQUEST;
 
-      return validationResultHandler(res, statusCode, {
-        email: result
-      });
+      return validationErrorHandler(
+        res, 
+        statusCode, 
+        VALIDATION_TITLES.DATA_VALIDATION,
+        result
+      );
     }
   }
 
@@ -348,18 +399,24 @@ export async function validateUserUpdateFields(
   }
 
   if (req.body.newPassword && req.body.currentPassword) {
-    let result = await validatePassword(req, 'newPassword');
+    let result: any = await validatePassword(req, 'newPassword');
     if (!result.isValid) {
-      return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, {
-        newPassword: result
-      });
+      return validationErrorHandler(
+        res, 
+        STATUS_CODES.BAD_REQUEST, 
+        VALIDATION_TITLES.DATA_VALIDATION,
+        result
+      );
     }
 
     result = await validatePassword(req, 'currentPassword');
     if (!result.isValid) {
-      return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, {
-        currentPassword: result
-      });
+      return validationErrorHandler(
+        res, 
+        STATUS_CODES.BAD_REQUEST, 
+        VALIDATION_TITLES.DATA_VALIDATION,
+        result
+      );
     }
   }
 
@@ -367,37 +424,49 @@ export async function validateUserUpdateFields(
   if (req.body.profileImgURL) {
     const result: any = await validateURL(req, 'profileImgURL');
     if (!result.isValid) {
-      return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, {
-        profileImgURL: result
-      });
+      return validationErrorHandler(
+        res, 
+        STATUS_CODES.BAD_REQUEST, 
+        VALIDATION_TITLES.DATA_VALIDATION,
+        result  
+      );
     }
   }
 
   if (req.body.coverImgURL) {
     const result: any = await validateURL(req, 'coverImgURL');
     if (!result.isValid) {
-      return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, {
-        coverImgURL: result
-      });
+      return validationErrorHandler(
+        res, 
+        STATUS_CODES.BAD_REQUEST, 
+        VALIDATION_TITLES.DATA_VALIDATION,
+        result
+      );
     }
   }
 
   if (req.body.bio) {
-    const result = await validateBio(req);
+    const result: any = await validateBio(req);
     if (!result.isValid) {
-      return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, {
-        bio: result
-      });
+      return validationErrorHandler(
+        res, 
+        STATUS_CODES.BAD_REQUEST, 
+        VALIDATION_TITLES.DATA_VALIDATION,
+        result
+       );
     }
   }
 
 
   if (req.body.links) {
-    const result = await validateURL(req, 'link');
+    const result: any = await validateURL(req, 'link');
     if (!result.isValid) {
-      return validationResultHandler(res, STATUS_CODES.BAD_REQUEST, {
-        links: result
-      });
+      return validationErrorHandler(
+        res, 
+        STATUS_CODES.BAD_REQUEST, 
+        VALIDATION_TITLES.DATA_VALIDATION,
+        result
+      );
     }
   }
 
