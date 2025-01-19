@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import User from '../models/user.model';
-import { createHTTPError, sanitizeUserAndFormat } from '../lib/utils/common';
+import { createHTTPError } from '../lib/utils/common';
 import Notification from '../models/notification.model';
 import mongoose from 'mongoose';
 import bcryptjs from 'bcryptjs';
@@ -11,11 +11,12 @@ import {
   BAD_REQUEST_ERROR_MESSAGES, 
   NOT_FOUND_ERROR_MESSAGES, 
   UNAUTHORIZED_ACCESS_ERROR_MESSAGES 
-} from '../constants/httpErrorMessages';
+} from '../constants/http/errorMessages';
 
 import {
   FOLLOWER_ID_NOT_PROVIDED  
 } from '../constants/validationMessages';
+import { USER_MESSAGES } from '../constants/http/responseMessages';
 
 
 export async function getUser(
@@ -32,20 +33,21 @@ export async function getUser(
       ));
     }
 
-    const user = await User.findById(req.params.id);
+    const user: any = await User.findById(req.params.id);
     if (!user) {
-      res.status(STATUS_CODES.NOT_FOUND).json({
-        success: false,
-        statusCode: STATUS_CODES.NOT_FOUND,
-        message: NOT_FOUND_ERROR_MESSAGES.USER
-      });
-      return;
+      return next(createHTTPError(
+        STATUS_CODES.NOT_FOUND,
+        NOT_FOUND_ERROR_MESSAGES.USER
+      ));
     }
 
+    const { password:_, ...rest } = user._doc;
     res.status(STATUS_CODES.OK).json({
       success: true,
-      statusCode: STATUS_CODES.OK,
-      data: sanitizeUserAndFormat(user)
+      message: USER_MESSAGES.GET_USER_INFO,
+      data: {
+        user: rest
+      }
     });
   } catch(err) {
     next(err);
@@ -108,8 +110,7 @@ export async function toggleFollower(
       await User.findByIdAndUpdate(currentUserId, { $pull: { following: followerId }});
       res.status(STATUS_CODES.OK).json({
         success: true,
-        statusCode: STATUS_CODES.OK,
-        message: 'User unfollowed successfully.'
+        message: USER_MESSAGES.UNFOLLOWED
       });
     } else {
       await User.findByIdAndUpdate(followerId, { $push: { followers: currentUserId }});
@@ -124,8 +125,7 @@ export async function toggleFollower(
 
       res.status(STATUS_CODES.OK).json({
         success: true,
-        statusCode: STATUS_CODES.OK,
-        message: 'User followed successfully.'
+        message: USER_MESSAGES.FOLLOWED
       });
     }
   } catch(err) {
@@ -172,7 +172,7 @@ export async function getSuggestedUsers(
     
     res.status(STATUS_CODES.OK).json({
       success: true,
-      statusCode: STATUS_CODES.OK,
+      message: USER_MESSAGES.GET_SUGGESTED_USERS,
       data: {
         users: suggestedUsers
       }
@@ -200,12 +200,10 @@ export async function updateUser(
 
     const user = await User.findById(req.params.id);
     if (!user) {
-      res.status(STATUS_CODES.NOT_FOUND).json({
-        success: false,
-        statusCode: STATUS_CODES.NOT_FOUND,
-        message: NOT_FOUND_ERROR_MESSAGES.USER
-      });
-      return;
+      return next(createHTTPError(
+        STATUS_CODES.NOT_FOUND,
+        NOT_FOUND_ERROR_MESSAGES.USER
+      ));
     }
 
     const { username, fullName, email, currentPassword, newPassword, bio, link } = req.body;
@@ -252,12 +250,13 @@ export async function updateUser(
     user.bio = bio || user.bio;
     user.link = link || user.link;
 
-    const updatedUser = await user.save();
+    const updatedUser: any = await user.save();
+    const { password:_, ...rest } = updatedUser._doc;
     res.status(STATUS_CODES.OK).json({
       success: true,
-      statusCode: STATUS_CODES.OK,
+      message: USER_MESSAGES.UPDATED,
       data: {
-        user: sanitizeUserAndFormat(updatedUser)
+        user: rest
       }
     });  
   } catch(err) {
@@ -283,12 +282,10 @@ export async function deleteUser(
 
     const user = await User.findById(req.params.id);
     if (!user) {
-      res.status(STATUS_CODES.NOT_FOUND).json({
-        success: false,
-        statusCode: STATUS_CODES.NOT_FOUND,
-        message: NOT_FOUND_ERROR_MESSAGES.USER
-      });
-      return;
+      return next(createHTTPError(
+        STATUS_CODES.NOT_FOUND,
+        NOT_FOUND_ERROR_MESSAGES.USER
+      ));
     }
 
     if (!user) {
