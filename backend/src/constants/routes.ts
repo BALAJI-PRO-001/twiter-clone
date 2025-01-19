@@ -12,7 +12,7 @@ const ROUTES = {
       BASE_URL: '/api/v1/users',
       GET_USER_PATH: '/:id',
       GET_SUGGESTED_USERS_PATH: '/:id/suggested',
-      FOLLOW_PATH: ':id/follow',
+      FOLLOW_PATH: '/:id/follow',
       UPDATE_USER_PATH: '/:id',
       DELETE_USER_PATH: '/:id',
     },
