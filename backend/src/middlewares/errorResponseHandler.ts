@@ -11,10 +11,14 @@ export default function errorResponseHandler(
   next: NextFunction
 ): void {
   const statusCode = err.statusCode || STATUS_CODES.INTERNAL_SERVER_ERROR;
-  const message = err.message || getReasonPhrase(STATUS_CODES.INTERNAL_SERVER_ERROR);
+  const STATUS_CODE_MESSAGE = getReasonPhrase(statusCode) + '.';
+  const message = err.message || STATUS_CODE_MESSAGE;
   res.status(statusCode).json({
     success: false,
-    statusCode: statusCode,
-    message: message
+    message: STATUS_CODE_MESSAGE,
+    error: {
+      code: statusCode,
+      message: message
+    }
   });
 }
